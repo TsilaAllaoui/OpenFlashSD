@@ -1,11 +1,12 @@
 #ifndef FILE_BROWSER_H
 #define FILE_BROWSER_H
 
+#include "bn_string.h"
 #include "file_entry.h"
 #include "bn_sprite_ptr.h"
 #include "bn_sprite_text_generator.h"
 
-constexpr int max_file_count = 100;
+constexpr int max_character_count = 100;
 
 namespace openflash
 {
@@ -18,6 +19,10 @@ namespace openflash
         int _current_cursor_position;
         bn::sprite_ptr _sdcard_sprite;
         bn::sprite_ptr _cursor_sprite;
+        int _current_depth;
+        int _previous_parentId;
+        bn::vector<file_entry, max_file_count> _current_depth_files;
+
     public:
         file_browser();
         ~file_browser() = default;
@@ -33,6 +38,9 @@ namespace openflash
 
         // render file browser
         void render();
+
+        // update current depth file list
+        void update_current_files();
     };
 }
 
