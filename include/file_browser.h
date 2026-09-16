@@ -22,6 +22,7 @@ namespace openflash
         int _current_depth;
         int _previous_parentId;
         bn::vector<file_entry, max_file_count> _current_depth_files;
+        bn::vector<bn::sprite_ptr, max_file_count_pagination> _icons;
 
     public:
         file_browser();
@@ -37,7 +38,7 @@ namespace openflash
         void render_file_list();
 
         // render file browser
-        void render();
+        void update();
 
         // update current depth file list
         void update_current_files();

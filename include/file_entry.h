@@ -7,10 +7,10 @@
 
 constexpr int screen_left = -(bn::display::width() / 2);
 constexpr int screen_top = -(bn::display::height() / 2);
-constexpr int text_spacing_y = 10;
-constexpr int file_x = screen_left + 20;
+constexpr int text_spacing_y = 14;
+constexpr int file_x = screen_left + 40;
 constexpr int file_y = screen_top + 35;
-constexpr int max_file_count_pagination = 12;
+constexpr int max_file_count_pagination = 9;
 constexpr int max_file_count = 100;
 
 namespace openflash
@@ -18,7 +18,8 @@ namespace openflash
     enum class file_type
     {
         NORMAL_FILE,
-        FOLDER
+        FOLDER,
+        GBA_FILE
     };
 
     class file_entry
@@ -57,6 +58,11 @@ namespace openflash
         bool is_file() const
         {
             return type == file_type::NORMAL_FILE;
+        }
+
+        bool is_gba_file() const
+        {
+            return type == file_type::GBA_FILE;
         }
     };
 }
