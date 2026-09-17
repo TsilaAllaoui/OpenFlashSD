@@ -4,6 +4,7 @@
 #include "scenes/IScene.h"
 #include "file_browser.h"
 #include "scenes/file_browser_scene.h"
+#include "scenes/main_menu_scene.h"
 
 namespace openflash
 {
@@ -13,6 +14,7 @@ namespace openflash
         scene_state_machine();
         IScene *_current_scene;
         file_brower_scene _file_brower_scene;
+        main_menu_scene _main_menu_scene;
 
     public:
         ~scene_state_machine();
@@ -20,6 +22,7 @@ namespace openflash
         IScene *get_current_scene_state();
         void set_current_scene_state(scene_type state);
         void render_current_scene();
+        void update_current_scene();
     };
 }
 

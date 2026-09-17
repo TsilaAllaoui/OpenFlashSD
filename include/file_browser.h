@@ -23,6 +23,7 @@ namespace openflash
         int _previous_parentId;
         bn::vector<file_entry, max_file_count> _current_depth_files;
         bn::vector<bn::sprite_ptr, max_file_count_pagination> _icons;
+        bool _need_update;
 
     public:
         file_browser();

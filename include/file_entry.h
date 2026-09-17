@@ -9,8 +9,8 @@ constexpr int screen_left = -(bn::display::width() / 2);
 constexpr int screen_top = -(bn::display::height() / 2);
 constexpr int text_spacing_y = 14;
 constexpr int file_x = screen_left + 40;
-constexpr int file_y = screen_top + 35;
-constexpr int max_file_count_pagination = 9;
+constexpr int file_y = screen_top + 44;
+constexpr int max_file_count_pagination = 8;
 constexpr int max_file_count = 100;
 
 namespace openflash
@@ -31,13 +31,15 @@ namespace openflash
             file_type type_,
             int id_,
             int parentId_ = -1,
-            int depth_ = 0)
+            int depth_ = 0,
+            int size_ = 0)
             : name(name_),
               path(path_),
               type(type_),
               id(id_),
               parentId(parentId_),
-              depth(depth_)
+              depth(depth_),
+              size(size_)
         {
         }
 
@@ -49,6 +51,7 @@ namespace openflash
         int id;
         int parentId;
         int depth;
+        int size;
 
         bool is_folder() const
         {

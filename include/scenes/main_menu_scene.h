@@ -1,24 +1,26 @@
-#ifndef FILE_BROWSER_SCENE_H
-#define FILE_BROWSER_SCENE_H
+#ifndef MAIN_MENU_SCENE_H
+#define MAIN_MENU_SCENE_H
 
-#include "IScene.h"
-#include "file_browser.h"
+#include "bn_sprite_ptr.h"
 #include "bn_regular_bg_ptr.h"
+#include "bn_sprite_text_generator.h"
+
+#include "scenes/scene_type.h"
+#include "scenes/IScene.h"
+
 
 namespace openflash
 {
-    class file_brower_scene : public IScene
+    class main_menu_scene : public IScene
     {
     private:
-        bn::optional<file_browser> _file_browser;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
-
     public:
-        file_brower_scene();
-        virtual ~file_brower_scene() = default;
+        main_menu_scene();
+        virtual ~main_menu_scene() = default;
         virtual void enter();
         virtual void exit();
         virtual void update();
@@ -27,4 +29,4 @@ namespace openflash
     };
 }
 
-#endif // FILE_BROWSER_SCENE_H
+#endif // MAIN_MENU_SCENE_H

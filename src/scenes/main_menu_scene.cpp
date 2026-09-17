@@ -1,38 +1,35 @@
+#include "main_menu_scene.h"
 
-#include "bn_core.h"
+#include "bn_keypad.h"
+#include "bn_display.h"
 #include "bn_bg_tiles.h"
 #include "bn_regular_bg_item.h"
 #include "bn_regular_bg_map_ptr.h"
-#include "bn_regular_bg_tiles_items_tiles.h"
 
 #include "tile_maps.h"
-#include "scenes/file_browser_scene.h"
+#include "file_entry.h"
+#include "scene_state_machine.h"
+#include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
-#include "file_browser_scene.h"
 
 namespace openflash
 {
-    file_brower_scene::file_brower_scene()
-        : _file_browser(),
-          _type(scene_type::FILE_BROWSER),
+    main_menu_scene::main_menu_scene()
+        : _type(scene_type::MAIN_MENU),
           _background(),
           _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font))
     {
     }
 
-    void file_brower_scene::enter()
+    void main_menu_scene::enter()
     {
-        _file_browser.emplace();
-
-        _file_browser.value().load_files();
-
         _text_generator.set_left_alignment();
 
         // header
         _text_generator.generate(
             screen_left + 80,
             screen_top + 12,
-            "File Browser",
+            "OpenFlashSD",
             _text_sprites);
 
         // Background
@@ -46,28 +43,32 @@ namespace openflash
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
         bg_map_ptr.reload_cells_ref();
         bn::bg_tiles::set_allow_offset(true);
+
+        _text_generator.generate(
+            -(bn::display::width() / 2) + 40, 0,
+            "START: show file browser",
+            _text_sprites);
     }
 
-    void file_brower_scene::exit()
+    void main_menu_scene::exit()
     {
         _text_sprites.clear();
-        _file_browser.reset();
         _background.reset();
     }
 
-    void file_brower_scene::update()
+    void main_menu_scene::update()
     {
-        if (_file_browser)
-            _file_browser->update();
+        if (bn::keypad::start_pressed())
+        {
+            scene_state_machine::instance().set_current_scene_state(scene_type::FILE_BROWSER);
+        }
     }
 
-    void file_brower_scene::render()
+    void main_menu_scene::render()
     {
-        if (_file_browser)
-            _file_browser->render_file_list();
     }
 
-    scene_type file_brower_scene::get_scene_type()
+    scene_type main_menu_scene::get_scene_type()
     {
         return _type;
     }

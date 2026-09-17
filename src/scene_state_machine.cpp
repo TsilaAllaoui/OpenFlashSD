@@ -34,13 +34,26 @@ namespace openflash
 
     void scene_state_machine::set_current_scene_state(scene_type type)
     {
-        if (type == scene_type::FILE_BROWSER)
+        // Free the last scene
+        if (_current_scene)
+            _current_scene->exit();
+
+        if (type == scene_type::MAIN_MENU)
+            _current_scene = &_main_menu_scene;
+        else if (type == scene_type::FILE_BROWSER)
             _current_scene = &_file_brower_scene;
         // Add more scenes here, not exception handling for now
+
+        _current_scene->enter();
     }
 
     void scene_state_machine::render_current_scene()
     {
         _current_scene->render();
+    }
+
+    void scene_state_machine::update_current_scene()
+    {
+        _current_scene->update();
     }
 }
