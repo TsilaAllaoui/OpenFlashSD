@@ -10,8 +10,8 @@ int main()
     
     while (true)
     {
+        bn::core::update();
         openflash::scene_state_machine::instance().update_current_scene();
         openflash::scene_state_machine::instance().render_current_scene();
-        bn::core::update();
     }
 }

@@ -5,10 +5,10 @@
 
 namespace openflash
 {
-    class IScene
+    class i_scene
     {
     public:
-        virtual ~IScene() = default;
+        virtual ~i_scene() = default;
         virtual void enter() = 0;
         virtual void exit() = 0;
         virtual void render() = 0;

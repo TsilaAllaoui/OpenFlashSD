@@ -1,13 +1,13 @@
 #ifndef FILE_BROWSER_SCENE_H
 #define FILE_BROWSER_SCENE_H
 
-#include "IScene.h"
+#include "i_scene.h"
 #include "file_browser.h"
 #include "bn_regular_bg_ptr.h"
 
 namespace openflash
 {
-    class file_brower_scene : public IScene
+    class file_brower_scene : public i_scene
     {
     private:
         bn::optional<file_browser> _file_browser;

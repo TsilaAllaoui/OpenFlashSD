@@ -6,7 +6,8 @@ namespace openflash
     enum class scene_type
     {
         MAIN_MENU,
-        FILE_BROWSER
+        FILE_BROWSER,
+        FLASH_SCREEN
     };
 }
 

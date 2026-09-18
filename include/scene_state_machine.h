@@ -1,10 +1,11 @@
 #ifndef SCENE_STATE_MACHINE_H
 #define SCENE_STATE_MACHINE_H
 
-#include "scenes/IScene.h"
+#include "scenes/i_scene.h"
 #include "file_browser.h"
 #include "scenes/file_browser_scene.h"
 #include "scenes/main_menu_scene.h"
+#include "scenes/flash_screen_scene.h"
 
 namespace openflash
 {
@@ -12,14 +13,15 @@ namespace openflash
     {
     private:
         scene_state_machine();
-        IScene *_current_scene;
+        i_scene *_current_scene;
         file_brower_scene _file_brower_scene;
         main_menu_scene _main_menu_scene;
+        flash_screen_scene _flash_screen_scene;
 
     public:
         ~scene_state_machine();
         static scene_state_machine &instance();
-        IScene *get_current_scene_state();
+        i_scene *get_current_scene_state();
         void set_current_scene_state(scene_type state);
         void render_current_scene();
         void update_current_scene();

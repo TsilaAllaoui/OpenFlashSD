@@ -1,5 +1,5 @@
-#ifndef MAIN_MENU_SCENE_H
-#define MAIN_MENU_SCENE_H
+#ifndef FLASH_SCREEN_SCENE_H
+#define FLASH_SCREEN_SCENE_H
 
 #include "bn_sprite_ptr.h"
 #include "bn_regular_bg_ptr.h"
@@ -11,7 +11,7 @@
 
 namespace openflash
 {
-    class main_menu_scene : public i_scene
+    class flash_screen_scene : public i_scene
     {
     private:
         scene_type _type;
@@ -20,8 +20,8 @@ namespace openflash
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
     public:
-        main_menu_scene();
-        virtual ~main_menu_scene() = default;
+        flash_screen_scene();
+        virtual ~flash_screen_scene() = default;
         virtual void enter();
         virtual void exit();
         virtual void update();
@@ -30,4 +30,4 @@ namespace openflash
     };
 }
 
-#endif // MAIN_MENU_SCENE_H
+#endif // FLASH_SCREEN_SCENE_H

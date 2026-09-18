@@ -27,7 +27,7 @@ namespace openflash
         return instance;
     }
 
-    IScene *scene_state_machine::get_current_scene_state()
+    i_scene *scene_state_machine::get_current_scene_state()
     {
         return _current_scene;
     }
@@ -42,6 +42,8 @@ namespace openflash
             _current_scene = &_main_menu_scene;
         else if (type == scene_type::FILE_BROWSER)
             _current_scene = &_file_brower_scene;
+        else if (type == scene_type::FLASH_SCREEN)
+            _current_scene = &_flash_screen_scene;
         // Add more scenes here, not exception handling for now
 
         _current_scene->enter();
