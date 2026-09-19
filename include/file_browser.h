@@ -54,9 +54,6 @@ namespace openflash
         // load files to list from a given source (ESP32 GPIO, Web, ...)
         bool load_files();
 
-        // get current file list
-        bn::vector<file_entry, max_file_count> get_files();
-
         // render file list
         bool render_file_list();
 
