@@ -7,6 +7,7 @@
 
 #include "scenes/scene_type.h"
 #include "scenes/i_scene.h"
+#include "utilities/selector.h"
 
 
 namespace openflash
@@ -16,9 +17,10 @@ namespace openflash
     private:
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
-        bn::optional<bn::regular_bg_ptr> _pop_up_bg;
+        selector _selector;
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
+        int _current_menu_index;
     public:
         main_menu_bg_scene();
         virtual ~main_menu_bg_scene() = default;
