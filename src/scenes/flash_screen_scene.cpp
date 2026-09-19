@@ -6,14 +6,17 @@
 #include "bn_bg_tiles.h"
 #include "bn_regular_bg_item.h"
 #include "bn_regular_bg_map_ptr.h"
+#include "bn_sprite_items_gbacart.h"
 
-#include "flash_screen.h"
 #include "file_entry.h"
+#include "flash_screen.h"
+#include "api/cart_api.h"
+#include "flash_context.h"
+#include "utilities/pop_up.h"
 #include "scene_state_machine.h"
+#include "utilities/text_helpers.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
-
-#include "utilities/pop_up.h"
 
 namespace openflash
 {
@@ -21,20 +24,21 @@ namespace openflash
         : _type(scene_type::FLASH_SCREEN),
           _background(),
           _pop_up_bg(),
-          _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font))
+          _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
+          _gbacart_sprite(bn::sprite_items::gbacart.create_sprite(screen_left + 12, screen_top + 12))
     {
+        _gbacart_sprite.set_visible(false);
     }
 
     void flash_screen_scene::enter()
     {
+        _gbacart_sprite.set_visible(true);
+        _gbacart_sprite.set_bg_priority(0);
+
         _text_generator.set_left_alignment();
 
         // header
-        _text_generator.generate(
-            screen_left + 80,
-            screen_top + 12,
-            "ROM Information",
-            _text_sprites);
+        text_helpers::draw_centered(_text_generator, "ROM Information", screen_top + 12, _text_sprites);
 
         // Background
         bn::bg_tiles::set_allow_offset(false);
@@ -49,15 +53,57 @@ namespace openflash
         _background->set_priority(0);
         bn::bg_tiles::set_allow_offset(true);
 
-        _text_generator.generate(
-            -(bn::display::width() / 2) + 65, 40,
-            "PROGRAM CARTRIDGE",
-            _text_sprites);
+        auto rom_infos = flash_context::instance().get_current_rom_infos();
 
-        _text_generator.generate(
-            -(bn::display::width() / 2) + 40, 65,
-            "A: Program       B: Back",
-            _text_sprites);
+        if (rom_infos.has_value())
+        {
+            bn::string_view label = "Name: ";
+            text_helpers::draw_label_value(_text_generator,
+                                           label,
+                                           rom_infos->name.empty() ? "Unkown name" : rom_infos->name,
+                                           -bn::display::width() / 2 + 20,
+                                           bn::display::width() / 6,
+                                           text_y_top,
+                                           _text_sprites);
+
+            label = "Game Code: ";
+            text_helpers::draw_label_value(_text_generator,
+                                           label,
+                                           rom_infos->game_code.empty() ? "Unkown game code" : rom_infos->game_code,
+                                           -bn::display::width() / 2 + 20,
+                                           bn::display::width() / 6,
+                                           text_y_top + text_spacing_y,
+                                           _text_sprites);
+
+            label = "Marker code";
+            text_helpers::draw_label_value(_text_generator,
+                                           label,
+                                           rom_infos->maker_code.empty() ? "Unkown marker code" : rom_infos->maker_code,
+                                           -bn::display::width() / 2 + 20,
+                                           bn::display::width() / 6,
+                                           text_y_top + text_spacing_y * 2,
+                                           _text_sprites);
+
+            label = "Save type";
+            text_helpers::draw_label_value(_text_generator,
+                                           label,
+                                           rom_infos->maker_code.empty() ? "Unkown marker code" : rom_infos->maker_code,
+                                           -bn::display::width() / 2 + 20,
+                                           bn::display::width() / 6,
+                                           text_y_top + text_spacing_y * 2,
+                                           _text_sprites);
+        }
+
+        auto cart_infos = flash_context::instance().get_current_cart_infos();
+
+        if (cart_infos.has_value())
+        {
+            text_helpers::draw_centered(_text_generator, cart_infos->name, 40, _text_sprites);
+        }
+
+        text_helpers::draw_centered(_text_generator,
+                                    "A:Flash, B: Back, SLCT: Refresh",
+                                    65, _text_sprites);
 
         for (auto &sprite : _text_sprites)
             sprite.set_bg_priority(0);
@@ -78,6 +124,12 @@ namespace openflash
             {
                 scene_state_machine::instance().set_current_scene_state(scene_type::FILE_BROWSER);
                 break;
+            }
+            if (bn::keypad::select_pressed())
+            {
+                auto cart_infos = api::cart_api::instance().get_current_cart_infos();
+                if (cart_infos.has_value())
+                    flash_context::instance().set_current_cart_infos(cart_infos.value());
             }
         }
     }

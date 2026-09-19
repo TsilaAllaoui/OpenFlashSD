@@ -3,13 +3,16 @@
 #include "bn_keypad.h"
 #include "bn_algorithm.h"
 #include "bn_sprite_palette_ptr.h"
-#include "bn_sprite_items_sdcard.h"
 #include "bn_sprite_items_cursor.h"
 
+#include "api/cart_api.h"
 #include "file_browser.h"
+#include "flash_context.h"
 #include "scene_state_machine.h"
+#include "api/rom_info_api.h"
 #include "bn_sprite_items_file.h"
 #include "bn_sprite_items_folder.h"
+#include "utilities/text_helpers.h"
 #include "bn_sprite_items_gbacart.h"
 #include "common_variable_8x16_sprite_font.h"
 
@@ -22,9 +25,6 @@ namespace openflash
           _text_generator(
               common::variable_8x16_sprite_font),
           _text_sprites(bn::vector<bn::sprite_ptr, max_file_count>()),
-          _sdcard_sprite(bn::sprite_items::sdcard.create_sprite(
-              screen_left + 12,
-              screen_top + 12)),
           _cursor_sprite(bn::sprite_items::cursor.create_sprite(
               screen_left + 12,
               file_y)),
@@ -219,14 +219,16 @@ namespace openflash
         _text_sprites.clear();
         _icons.clear();
 
-        _text_generator.generate(screen_left + 20,
-                                 screen_top + 30,
-                                 current_file.path.substr(0, current_file.path.size() - current_file.name.size()),
-                                 _text_sprites);
+        text_helpers::draw_left(_text_generator,
+                                current_file.path.substr(0, current_file.path.size() - current_file.name.size()),
+                                screen_left + 20,
+                                screen_top + 30,
+                                _text_sprites);
 
-        _text_generator.generate(bn::display::width() / 3,
-                                 screen_top + 30,
+        text_helpers::draw_right(_text_generator,
                                  bn::to_string<16>(_browser_state.current_file_index + 1) + "/" + bn::to_string<16>(_current_depth_files.size()),
+                                 bn::display::width() / 3 + 20,
+                                 screen_top + 30,
                                  _text_sprites);
 
         for (int index = lowerBoundary; index < bn::min(upperBoundary, _current_depth_files.size()); ++index)
@@ -252,17 +254,17 @@ namespace openflash
             else
                 _icons.push_back(bn::sprite_items::gbacart.create_sprite(file_x - 12, file_y + (index - lowerBoundary) * text_spacing_y));
 
-            _text_generator.generate(
-                file_x,
-                file_y + (index - lowerBoundary) * text_spacing_y,
-                text,
-                _text_sprites);
+            text_helpers::draw_left(_text_generator,
+                                    text,
+                                    file_x,
+                                    file_y + (index - lowerBoundary) * text_spacing_y,
+                                    _text_sprites);
 
-            _text_generator.generate(
-                bn::display::width() / 3,
-                file_y + (index - lowerBoundary) * text_spacing_y,
-                file.is_folder() ? "<DIR>" : (file.size < 1000 ? (bn::to_string<32>(file.size) + "KiB") : (bn::to_string<32>(file.size % 10) + "MiB")),
-                _text_sprites);
+            text_helpers::draw_right(_text_generator,
+                                     file.is_folder() ? "<DIR>" : (file.size < 1000 ? (bn::to_string<32>(file.size) + "KiB") : (bn::to_string<32>(file.size % 10) + "MiB")),
+                                     bn::display::width() / 3 + 25,
+                                     file_y + (index - lowerBoundary) * text_spacing_y,
+                                     _text_sprites);
         }
 
         return false;
@@ -350,6 +352,16 @@ namespace openflash
 
             if (file.is_gba_file())
             {
+                // update rom infos
+                auto rom_infos = api::rom_info_api::instance().get_current_rom_infos(file);
+                if (rom_infos.has_value())
+                    flash_context::instance().set_current_rom_infos(rom_infos.value());
+
+                // update cart infos
+                auto cart_infos = api::cart_api::instance().get_current_cart_infos();
+                if (cart_infos.has_value())
+                    flash_context::instance().set_current_cart_infos(cart_infos.value());
+
                 scene_state_machine::instance().set_current_scene_state(scene_type::FLASH_SCREEN);
                 return;
             }

@@ -6,7 +6,7 @@
 #include "bn_sprite_ptr.h"
 #include "bn_sprite_text_generator.h"
 
-constexpr int max_character_count = 100;
+constexpr int max_character_count = 64;
 constexpr int max_folder_depth = 16;
 
 namespace openflash
@@ -30,7 +30,6 @@ namespace openflash
         bn::vector<file_entry, max_file_count> _files;
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, max_file_count> _text_sprites;
-        bn::sprite_ptr _sdcard_sprite;
         bn::sprite_ptr _cursor_sprite;
         bn::vector<file_entry, max_file_count> _current_depth_files;
         bn::vector<bn::sprite_ptr, max_file_count_pagination> _icons;

@@ -15,6 +15,7 @@
 #include "common_variable_8x16_sprite_font.h"
 
 #include "utilities/pop_up.h"
+#include "utilities/text_helpers.h"
 
 namespace openflash
 {
@@ -31,11 +32,10 @@ namespace openflash
         _text_generator.set_left_alignment();
 
         // header
-        _text_generator.generate(
-            screen_left + 80,
-            screen_top + 12,
-            "OpenFlashSD",
-            _text_sprites);
+        text_helpers::draw_centered(_text_generator,
+                                    "OpenFlashSD",
+                                    screen_top + 12,
+                                    _text_sprites);
 
         // Background
         bn::bg_tiles::set_allow_offset(false);
@@ -49,10 +49,17 @@ namespace openflash
         bg_map_ptr.reload_cells_ref();
         bn::bg_tiles::set_allow_offset(true);
 
-        _text_generator.generate(
-            -(bn::display::width() / 2) + 40, 0,
-            "START: show file browser",
-            _text_sprites);
+        text_helpers::draw_centered(_text_generator,
+                                    "START: show file browser",
+                                    0,
+                                    _text_sprites);
+
+        text_helpers::draw_centered(_text_generator,
+                                    "SELECT: Refresh cart",
+                                    50,
+                                    _text_sprites);
+
+        
     }
 
     void main_menu_scene::exit()

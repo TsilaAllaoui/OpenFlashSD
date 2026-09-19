@@ -15,6 +15,7 @@ namespace openflash
         bn::optional<bn::regular_bg_ptr> _background;
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
+        bn::sprite_ptr _sdcard_sprite;
 
     public:
         file_brower_scene();
