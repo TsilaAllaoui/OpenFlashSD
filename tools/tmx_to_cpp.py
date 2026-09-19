@@ -194,7 +194,7 @@ def collect_tmx_files(input_path):
 
 def main():
     # Backwards-compatible single file:
-    #   python3 tools/tmx_to_cpp.py maps/tile_maps.tmx
+    #   python3 tools/tmx_to_cpp.py maps/main_menu_bg.tmx
     #
     # Convert every TMX in a folder recursively:
     #   python3 tools/tmx_to_cpp.py maps
@@ -210,8 +210,8 @@ def main():
         sys.exit(1)
 
     input_path = Path(sys.argv[1]) if len(sys.argv) >= 2 else Path("maps")
-    include_dir = Path(sys.argv[2]) if len(sys.argv) >= 3 else Path("include")
-    src_dir = Path(sys.argv[3]) if len(sys.argv) >= 4 else Path("src")
+    include_dir = Path(sys.argv[2]) if len(sys.argv) >= 3 else Path("include/generated")
+    src_dir = Path(sys.argv[3]) if len(sys.argv) >= 4 else Path("src/generated")
 
     include_dir.mkdir(parents=True, exist_ok=True)
     src_dir.mkdir(parents=True, exist_ok=True)

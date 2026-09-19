@@ -1,10 +1,10 @@
 #ifndef SCENE_STATE_MACHINE_H
 #define SCENE_STATE_MACHINE_H
 
-#include "scenes/i_scene.h"
 #include "file_browser.h"
-#include "scenes/file_browser_scene.h"
+#include "scenes/i_scene.h"
 #include "scenes/main_menu_scene.h"
+#include "scenes/file_browser_scene.h"
 #include "scenes/flash_screen_scene.h"
 
 namespace openflash
@@ -15,8 +15,8 @@ namespace openflash
         scene_state_machine();
         i_scene *_current_scene;
         file_brower_scene _file_brower_scene;
-        main_menu_scene _main_menu_scene;
-        flash_screen_scene _flash_screen_scene;
+        main_menu_bg_scene _main_menu_bg_scene;
+        flash_screen_bg_scene _flash_screen_bg_scene;
 
         bn::optional<scene_type> _requested_scene;
 

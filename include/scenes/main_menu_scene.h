@@ -11,7 +11,7 @@
 
 namespace openflash
 {
-    class main_menu_scene : public i_scene
+    class main_menu_bg_scene : public i_scene
     {
     private:
         scene_type _type;
@@ -20,8 +20,8 @@ namespace openflash
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
     public:
-        main_menu_scene();
-        virtual ~main_menu_scene() = default;
+        main_menu_bg_scene();
+        virtual ~main_menu_bg_scene() = default;
         virtual void enter();
         virtual void exit();
         virtual void update();

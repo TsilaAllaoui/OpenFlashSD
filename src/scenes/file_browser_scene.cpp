@@ -6,7 +6,7 @@
 #include "bn_sprite_items_sdcard.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 
-#include "tile_maps.h"
+#include "main_menu_bg.h"
 #include "file_browser_scene.h"
 #include "utilities/text_helpers.h"
 #include "scenes/file_browser_scene.h"
@@ -51,7 +51,7 @@ namespace openflash
         _background.emplace(bn::regular_bg_item(
                                 bn::regular_bg_tiles_items::tiles,
                                 bn::regular_bg_tiles_items::tiles_palette,
-                                openflash::tile_maps_map_item)
+                                openflash::main_menu_bg_map_item)
                                 .create_bg(0, 0));
         _background.value().set_top_left_position(0, 0);
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();

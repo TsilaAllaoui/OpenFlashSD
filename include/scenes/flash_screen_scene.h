@@ -15,7 +15,7 @@ constexpr int text_y_top = -bn::display::height() / 2 + 35;
 
 namespace openflash
 {
-    class flash_screen_scene : public i_scene
+    class flash_screen_bg_scene : public i_scene
     {
     private:
         scene_type _type;
@@ -25,8 +25,8 @@ namespace openflash
         bn::vector<bn::sprite_ptr, max_text_sprite_count> _text_sprites;
         bn::sprite_ptr _gbacart_sprite;
     public:
-        flash_screen_scene();
-        virtual ~flash_screen_scene() = default;
+        flash_screen_bg_scene();
+        virtual ~flash_screen_bg_scene() = default;
         virtual void enter();
         virtual void exit();
         virtual void update();

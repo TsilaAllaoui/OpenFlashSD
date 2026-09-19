@@ -1,5 +1,3 @@
-#include "main_menu_scene.h"
-
 #include "bn_keypad.h"
 #include "bn_core.h"
 #include "bn_display.h"
@@ -7,7 +5,7 @@
 #include "bn_regular_bg_item.h"
 #include "bn_regular_bg_map_ptr.h"
 
-#include "tile_maps.h"
+#include "main_menu_bg.h"
 #include "pop_up_bg.h"
 #include "file_entry.h"
 #include "scene_state_machine.h"
@@ -19,7 +17,7 @@
 
 namespace openflash
 {
-    main_menu_scene::main_menu_scene()
+    main_menu_bg_scene::main_menu_bg_scene()
         : _type(scene_type::MAIN_MENU),
           _background(),
           _pop_up_bg(),
@@ -27,7 +25,7 @@ namespace openflash
     {
     }
 
-    void main_menu_scene::enter()
+    void main_menu_bg_scene::enter()
     {
         _text_generator.set_left_alignment();
 
@@ -42,7 +40,7 @@ namespace openflash
         _background.emplace(bn::regular_bg_item(
                                 bn::regular_bg_tiles_items::tiles,
                                 bn::regular_bg_tiles_items::tiles_palette,
-                                openflash::tile_maps_map_item)
+                                openflash::main_menu_bg_map_item)
                                 .create_bg(0, 0));
         _background.value().set_top_left_position(0, 0);
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
@@ -62,13 +60,13 @@ namespace openflash
         
     }
 
-    void main_menu_scene::exit()
+    void main_menu_bg_scene::exit()
     {
         _text_sprites.clear();
         _background.reset();
     }
 
-    void main_menu_scene::update()
+    void main_menu_bg_scene::update()
     {
         if (bn::keypad::start_pressed())
         {
@@ -76,11 +74,11 @@ namespace openflash
         }
     }
 
-    void main_menu_scene::render()
+    void main_menu_bg_scene::render()
     {
     }
 
-    scene_type main_menu_scene::get_scene_type()
+    scene_type main_menu_bg_scene::get_scene_type()
     {
         return _type;
     }

@@ -4,7 +4,7 @@
 #include "bn_regular_bg_map_ptr.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 
-#include "tile_maps.h"
+#include "main_menu_bg.h"
 #include "scene_state_machine.h"
 
 namespace openflash
@@ -32,11 +32,11 @@ namespace openflash
             _current_scene->exit();
 
         if (type == scene_type::MAIN_MENU)
-            _current_scene = &_main_menu_scene;
+            _current_scene = &_main_menu_bg_scene;
         else if (type == scene_type::FILE_BROWSER)
             _current_scene = &_file_brower_scene;
         else if (type == scene_type::FLASH_SCREEN)
-            _current_scene = &_flash_screen_scene;
+            _current_scene = &_flash_screen_bg_scene;
         // Add more scenes here, not exception handling for now
 
         _current_scene->enter();

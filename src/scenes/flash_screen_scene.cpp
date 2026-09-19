@@ -1,5 +1,3 @@
-#include "flash_screen_scene.h"
-
 #include "bn_keypad.h"
 #include "bn_core.h"
 #include "bn_display.h"
@@ -9,7 +7,7 @@
 #include "bn_sprite_items_gbacart.h"
 
 #include "file_entry.h"
-#include "flash_screen.h"
+#include "flash_screen_bg.h"
 #include "api/cart_api.h"
 #include "flash_context.h"
 #include "utilities/pop_up.h"
@@ -20,7 +18,7 @@
 
 namespace openflash
 {
-    flash_screen_scene::flash_screen_scene()
+    flash_screen_bg_scene::flash_screen_bg_scene()
         : _type(scene_type::FLASH_SCREEN),
           _background(),
           _pop_up_bg(),
@@ -30,7 +28,7 @@ namespace openflash
         _gbacart_sprite.set_visible(false);
     }
 
-    void flash_screen_scene::enter()
+    void flash_screen_bg_scene::enter()
     {
         _gbacart_sprite.set_visible(true);
         _gbacart_sprite.set_bg_priority(0);
@@ -45,7 +43,7 @@ namespace openflash
         _background.emplace(bn::regular_bg_item(
                                 bn::regular_bg_tiles_items::tiles,
                                 bn::regular_bg_tiles_items::tiles_palette,
-                                openflash::flash_screen_map_item)
+                                openflash::flash_screen_bg_map_item)
                                 .create_bg(0, 0));
         _background.value().set_top_left_position(0, 0);
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
@@ -109,14 +107,14 @@ namespace openflash
             sprite.set_bg_priority(0);
     }
 
-    void flash_screen_scene::exit()
+    void flash_screen_bg_scene::exit()
     {
         _gbacart_sprite.set_visible(false);
         _text_sprites.clear();
         _background.reset();
     }
 
-    void flash_screen_scene::update()
+    void flash_screen_bg_scene::update()
     {
         while (true)
         {
@@ -135,11 +133,11 @@ namespace openflash
         }
     }
 
-    void flash_screen_scene::render()
+    void flash_screen_bg_scene::render()
     {
     }
 
-    scene_type flash_screen_scene::get_scene_type()
+    scene_type flash_screen_bg_scene::get_scene_type()
     {
         return _type;
     }
