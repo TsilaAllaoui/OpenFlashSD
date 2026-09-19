@@ -14,13 +14,6 @@ namespace openflash
         _current_scene = nullptr;
     }
 
-    scene_state_machine::~scene_state_machine()
-    {
-        if (_current_scene)
-            delete _current_scene;
-        _current_scene = nullptr;
-    }
-
     scene_state_machine &scene_state_machine::instance()
     {
         static scene_state_machine instance;
@@ -56,6 +49,20 @@ namespace openflash
 
     void scene_state_machine::update_current_scene()
     {
-        _current_scene->update();
+        if (_current_scene)
+            _current_scene->update();
+
+        if (_requested_scene)
+        {
+            scene_type next_scene = *_requested_scene;
+            _requested_scene.reset();
+
+            set_current_scene_state(next_scene);
+        }
+    }
+
+    void scene_state_machine::request_scene_state(scene_type type)
+    {
+        _requested_scene = type;
     }
 }

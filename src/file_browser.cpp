@@ -362,7 +362,7 @@ namespace openflash
                 if (cart_infos.has_value())
                     flash_context::instance().set_current_cart_infos(cart_infos.value());
 
-                scene_state_machine::instance().set_current_scene_state(scene_type::FLASH_SCREEN);
+                scene_state_machine::instance().request_scene_state(scene_type::FLASH_SCREEN);
                 return;
             }
         }
@@ -370,7 +370,7 @@ namespace openflash
         {
             if (_history.empty())
             {
-                scene_state_machine::instance().set_current_scene_state(scene_type::MAIN_MENU);
+                scene_state_machine::instance().request_scene_state(scene_type::MAIN_MENU);
                 return;
             }
 
@@ -419,8 +419,33 @@ namespace openflash
         }
     }
 
-    bn::sprite_ptr &file_browser::get_cursor_sprite()
+    file_browser_snapshot file_browser::get_snapshot() const
     {
-        return _cursor_sprite;
+        file_browser_snapshot snapshot;
+
+        snapshot.state = _browser_state;
+        snapshot.history = _history;
+
+        return snapshot;
+    }
+
+    void file_browser::restore_snapshot(const file_browser_snapshot &snapshot)
+    {
+        _browser_state = snapshot.state;
+        _history = snapshot.history;
+
+        update_current_files();
+
+        _browser_state.need_update = true;
+
+        int cursor_index =
+            _browser_state.current_file_index %
+            max_file_count_pagination;
+
+        _cursor_sprite.set_y(
+            file_y +
+            cursor_index * text_spacing_y);
+
+        render_file_list();
     }
 }

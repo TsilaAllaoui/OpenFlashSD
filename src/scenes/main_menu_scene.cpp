@@ -70,10 +70,9 @@ namespace openflash
 
     void main_menu_scene::update()
     {
-        bn::core::update();
         if (bn::keypad::start_pressed())
         {
-            scene_state_machine::instance().set_current_scene_state(scene_type::FILE_BROWSER);
+            scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
         }
     }
 

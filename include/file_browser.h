@@ -7,7 +7,7 @@
 #include "bn_sprite_text_generator.h"
 
 constexpr int max_character_count = 64;
-constexpr int max_folder_depth = 16;
+constexpr int max_navigation_depth = 16;
 
 namespace openflash
 {
@@ -24,6 +24,16 @@ namespace openflash
         int selected_index;
     };
 
+    struct file_browser_snapshot
+    {
+        file_browser_state state;
+
+        bn::vector<
+            navigation_entry,
+            max_navigation_depth>
+            history;
+    };
+
     class file_browser
     {
     private:
@@ -35,7 +45,7 @@ namespace openflash
         bn::vector<bn::sprite_ptr, max_file_count_pagination> _icons;
         file_browser_state _browser_state;
 
-        bn::vector<navigation_entry, max_folder_depth> _history;
+        bn::vector<navigation_entry, max_navigation_depth> _history;
 
     public:
         file_browser();
@@ -59,7 +69,10 @@ namespace openflash
         // update current files from given selected file
         void update_current_files();
 
-        bn::sprite_ptr &get_cursor_sprite();
+        // get/restore file browser state
+        file_browser_snapshot get_snapshot() const;
+        void restore_snapshot(
+            const file_browser_snapshot &snapshot);
     };
 }
 

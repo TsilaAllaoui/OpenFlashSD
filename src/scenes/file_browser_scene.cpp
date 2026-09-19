@@ -12,7 +12,6 @@
 #include "scenes/file_browser_scene.h"
 #include "common_variable_8x16_sprite_font.h"
 
-
 namespace openflash
 {
     file_brower_scene::file_brower_scene()
@@ -35,6 +34,12 @@ namespace openflash
 
         _file_browser.value().load_files();
 
+        if (_previous_file_browser)
+        {
+            _file_browser->restore_snapshot(
+                *_previous_file_browser);
+        }
+
         // header
         text_helpers::draw_centered(_text_generator,
                                     "File Browser",
@@ -56,8 +61,16 @@ namespace openflash
 
     void file_brower_scene::exit()
     {
+        _sdcard_sprite.set_visible(false);
         _text_sprites.clear();
+
+        if (_file_browser)
+        {
+            _previous_file_browser = _file_browser->get_snapshot();
+        }
+
         _file_browser.reset();
+
         _background.reset();
     }
 

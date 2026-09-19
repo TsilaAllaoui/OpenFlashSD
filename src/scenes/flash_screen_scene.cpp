@@ -111,6 +111,7 @@ namespace openflash
 
     void flash_screen_scene::exit()
     {
+        _gbacart_sprite.set_visible(false);
         _text_sprites.clear();
         _background.reset();
     }
@@ -122,7 +123,7 @@ namespace openflash
             bn::core::update();
             if (bn::keypad::b_pressed())
             {
-                scene_state_machine::instance().set_current_scene_state(scene_type::FILE_BROWSER);
+                scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
                 break;
             }
             if (bn::keypad::select_pressed())

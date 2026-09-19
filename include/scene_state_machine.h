@@ -18,13 +18,16 @@ namespace openflash
         main_menu_scene _main_menu_scene;
         flash_screen_scene _flash_screen_scene;
 
+        bn::optional<scene_type> _requested_scene;
+
     public:
-        ~scene_state_machine();
+        ~scene_state_machine() = default;
         static scene_state_machine &instance();
         i_scene *get_current_scene_state();
         void set_current_scene_state(scene_type state);
         void render_current_scene();
         void update_current_scene();
+        void request_scene_state(scene_type type);
     };
 }
 
