@@ -5,18 +5,17 @@
 namespace openflash::text_helpers
 {
     void clear_text(
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites)
     {
         text_sprites.clear();
     }
 
-
     void draw_left(
-        bn::sprite_text_generator& text_generator,
+        bn::sprite_text_generator &text_generator,
         bn::string_view text,
         int x,
         int y,
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites)
     {
         text_generator.set_left_alignment();
 
@@ -27,12 +26,11 @@ namespace openflash::text_helpers
             text_sprites);
     }
 
-
     void draw_centered(
-        bn::sprite_text_generator& text_generator,
+        bn::sprite_text_generator &text_generator,
         bn::string_view text,
         int y,
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites)
     {
         text_generator.set_center_alignment();
 
@@ -43,13 +41,12 @@ namespace openflash::text_helpers
             text_sprites);
     }
 
-
     void draw_centered_at(
-        bn::sprite_text_generator& text_generator,
+        bn::sprite_text_generator &text_generator,
         bn::string_view text,
         int center_x,
         int y,
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites)
     {
         text_generator.set_center_alignment();
 
@@ -60,13 +57,12 @@ namespace openflash::text_helpers
             text_sprites);
     }
 
-
     void draw_right(
-        bn::sprite_text_generator& text_generator,
+        bn::sprite_text_generator &text_generator,
         bn::string_view text,
         int x,
         int y,
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites)
     {
         text_generator.set_right_alignment();
 
@@ -77,7 +73,6 @@ namespace openflash::text_helpers
             text_sprites);
     }
 
-
     bn::string<64> truncate_text(
         bn::string_view text,
         int max_characters)
@@ -86,15 +81,15 @@ namespace openflash::text_helpers
 
         int limit = bn::min(max_characters, 64);
 
-        if(text.size() <= limit)
+        if (text.size() <= limit)
         {
             result = text;
             return result;
         }
 
-        if(limit <= 3)
+        if (limit <= 3)
         {
-            for(int index = 0; index < limit; ++index)
+            for (int index = 0; index < limit; ++index)
             {
                 result.push_back('.');
             }
@@ -102,7 +97,7 @@ namespace openflash::text_helpers
             return result;
         }
 
-        for(int index = 0; index < limit - 3; ++index)
+        for (int index = 0; index < limit - 3; ++index)
         {
             result.push_back(text[index]);
         }
@@ -112,13 +107,12 @@ namespace openflash::text_helpers
         return result;
     }
 
-
     void draw_centered_truncated(
-        bn::sprite_text_generator& text_generator,
+        bn::sprite_text_generator &text_generator,
         bn::string_view text,
         int y,
         int max_characters,
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites)
     {
         bn::string<64> display_text =
             truncate_text(text, max_characters);
@@ -130,48 +124,54 @@ namespace openflash::text_helpers
             text_sprites);
     }
 
-
     void draw_label_value(
-        bn::sprite_text_generator& text_generator,
+        bn::sprite_text_generator &text_generator,
         bn::string_view label,
         bn::string_view value,
         int left_x,
         int right_x,
         int y,
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites,
+        int min_spacing)
     {
-        text_generator.set_left_alignment();
+        const int label_width = text_generator.width(label);
+        const int value_width = text_generator.width(value);
 
+        const int label_end = left_x + label_width;
+        const int value_start = right_x - value_width;
+
+        text_generator.set_left_alignment();
         text_generator.generate(
             left_x,
             y,
             label,
             text_sprites);
 
-        text_generator.set_right_alignment();
-
-        text_generator.generate(
-            right_x,
-            y,
-            value,
-            text_sprites);
+        if (value_start >= label_end + min_spacing)
+        {
+            text_generator.set_right_alignment();
+            text_generator.generate(
+                right_x,
+                y,
+                value,
+                text_sprites);
+        }
     }
 
-
     void draw_centered_multiline(
-        bn::sprite_text_generator& text_generator,
+        bn::sprite_text_generator &text_generator,
         bn::string_view text,
         int center_x,
         int start_y,
         int line_spacing,
-        bn::ivector<bn::sprite_ptr>& text_sprites)
+        bn::ivector<bn::sprite_ptr> &text_sprites)
     {
         text_generator.set_center_alignment();
 
         int line_start = 0;
         int line_index = 0;
 
-        for(int index = 0; index <= text.size(); ++index)
+        for (int index = 0; index <= text.size(); ++index)
         {
             bool end_of_text =
                 index == text.size();
@@ -180,7 +180,7 @@ namespace openflash::text_helpers
                 !end_of_text &&
                 text[index] == '\n';
 
-            if(end_of_text || new_line)
+            if (end_of_text || new_line)
             {
                 bn::string_view line =
                     text.substr(

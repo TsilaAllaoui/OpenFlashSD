@@ -10,8 +10,9 @@
 #include "scenes/i_scene.h"
 
 constexpr int flash_scene_max_text_sprite_count = 100;
-constexpr int flash_scene_text_y_spacing = 16;
-constexpr int text_y_top = -bn::display::height() / 2 + 35;
+constexpr int flash_scene_text_y_spacing = 14;
+constexpr int flash_scene_text_y_top = -bn::display::height() / 2 + 30;
+constexpr int flash_x_alignment = -bn::display::width() / 2 + 20;
 
 namespace openflash
 {

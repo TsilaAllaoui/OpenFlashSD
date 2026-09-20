@@ -17,7 +17,6 @@
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
 
-
 namespace openflash
 {
     flash_screen_scene::flash_screen_scene()
@@ -55,40 +54,40 @@ namespace openflash
 
         if (rom_infos.has_value())
         {
-            bn::string_view label = "Name: ";
+            bn::string_view label = "Name:";
             text_helpers::draw_label_value(_text_generator,
                                            label,
                                            rom_infos->name.empty() ? "Unkown name" : rom_infos->name,
-                                           -bn::display::width() / 2 + 20,
-                                           bn::display::width() / 6,
-                                           text_y_top,
+                                           dump_x_alignment,
+                                           -dump_x_alignment,
+                                           flash_scene_text_y_top,
                                            _text_sprites);
 
-            label = "Game Code: ";
+            label = "Game Code:";
             text_helpers::draw_label_value(_text_generator,
                                            label,
                                            rom_infos->game_code.empty() ? "Unkown game code" : rom_infos->game_code,
-                                           -bn::display::width() / 2 + 20,
-                                           bn::display::width() / 6,
-                                           text_y_top + text_spacing_y,
+                                           dump_x_alignment,
+                                           -dump_x_alignment,
+                                           flash_scene_text_y_top + text_spacing_y,
                                            _text_sprites);
 
-            label = "Marker code";
+            label = "Marker code:";
             text_helpers::draw_label_value(_text_generator,
                                            label,
                                            rom_infos->maker_code.empty() ? "Unkown marker code" : rom_infos->maker_code,
-                                           -bn::display::width() / 2 + 20,
-                                           bn::display::width() / 6,
-                                           text_y_top + text_spacing_y * 2,
+                                           dump_x_alignment,
+                                           -dump_x_alignment,
+                                           flash_scene_text_y_top + text_spacing_y * 2,
                                            _text_sprites);
 
-            label = "Save type";
+            label = "Save type:";
             text_helpers::draw_label_value(_text_generator,
                                            label,
                                            string_helpers::to_string(rom_infos->savetype),
-                                           -bn::display::width() / 2 + 20,
-                                           bn::display::width() / 6,
-                                           text_y_top + text_spacing_y * 3,
+                                           dump_x_alignment,
+                                           -dump_x_alignment,
+                                           flash_scene_text_y_top + text_spacing_y * 3,
                                            _text_sprites);
         }
 
@@ -96,7 +95,9 @@ namespace openflash
 
         if (cart_infos.has_value())
         {
-            text_helpers::draw_centered(_text_generator, cart_infos->name, 40, _text_sprites);
+            bn::string<max_character_count> cart_infos_text = "Cart: ";
+            cart_infos_text += cart_infos->name;
+            text_helpers::draw_centered(_text_generator, cart_infos_text, 30, _text_sprites);
         }
 
         text_helpers::draw_centered(_text_generator,
@@ -126,9 +127,19 @@ namespace openflash
             }
             if (bn::keypad::select_pressed())
             {
+                for (auto &sprite : _text_sprites)
+                    sprite.set_bg_priority(1);
+                _gbacart_sprite.set_bg_priority(1);
+                _background->set_priority(1);
+
                 auto cart_infos = api::cart_api::instance().get_current_cart_infos();
                 if (cart_infos.has_value())
                     flash_context::instance().set_current_cart_infos(cart_infos.value());
+
+                for (auto &sprite : _text_sprites)
+                    sprite.set_bg_priority(0);
+                _gbacart_sprite.set_bg_priority(0);
+                _background->set_priority(0);
             }
         }
     }
