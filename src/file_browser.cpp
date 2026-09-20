@@ -8,6 +8,7 @@
 #include "api/cart_api.h"
 #include "file_browser.h"
 #include "flash_context.h"
+#include "utilities/async.h"
 #include "api/rom_info_api.h"
 #include "api/filesystem_api.h"
 #include "scene_state_machine.h"
@@ -31,17 +32,23 @@ namespace openflash
               file_y)),
           _current_depth_files(bn::vector<file_entry, max_file_count>()),
           _icons(bn::vector<bn::sprite_ptr, max_file_count_pagination>()),
-          _browser_state()
+          _browser_state(),
+          _restore_history(true)
     {
         _browser_state = {
             .current_folder_id = -1,
             .current_file_index = 0,
             .need_update = true};
+
+        _cursor_sprite.set_visible(false);
     }
 
     bool file_browser::load_files()
     {
         _files.clear();
+
+        // getting files from server side
+        pop_up popup("Loading files...", false);
         _files = api::filesystem_api::instance().get_files();
 
         // updating current depth files
@@ -50,6 +57,8 @@ namespace openflash
             if (current_file.depth == 0 && current_file.parentId == -1)
                 _current_depth_files.emplace_back(current_file);
         }
+
+        _cursor_sprite.set_visible(true);
 
         render_file_list();
 
@@ -67,7 +76,7 @@ namespace openflash
         if (_current_depth_files.empty())
         {
             // Pop up
-            auto popup = pop_up("Empty folder!", &_cursor_sprite);
+            auto popup = pop_up("Empty folder!", true, &_cursor_sprite);
             popup.render();
             popup.update();
             return true;
@@ -225,11 +234,13 @@ namespace openflash
             if (file.is_gba_file())
             {
                 // update rom infos
+                pop_up popup("Getting rom infos...", false);
                 auto rom_infos = api::rom_info_api::instance().get_current_rom_infos(file);
                 if (rom_infos.has_value())
                     flash_context::instance().set_current_rom_infos(rom_infos.value());
 
                 // update cart infos
+                popup = pop_up("Getting cart infos...", false);
                 auto cart_infos = api::cart_api::instance().get_current_cart_infos();
                 if (cart_infos.has_value())
                     flash_context::instance().set_current_cart_infos(cart_infos.value());
@@ -242,6 +253,7 @@ namespace openflash
         {
             if (_history.empty())
             {
+                _restore_history = false;
                 scene_state_machine::instance().request_scene_state(scene_type::MAIN_MENU);
                 return;
             }
@@ -319,5 +331,10 @@ namespace openflash
             cursor_index * text_spacing_y);
 
         render_file_list();
+    }
+
+    bool file_browser::restore_browser_state()
+    {
+        return _restore_history;
     }
 }

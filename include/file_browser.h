@@ -46,7 +46,8 @@ namespace openflash
         file_browser_state _browser_state;
 
         bn::vector<navigation_entry, max_navigation_depth> _history;
-
+        
+        bool _restore_history;
     public:
         file_browser();
         ~file_browser() = default;
@@ -68,8 +69,10 @@ namespace openflash
 
         // get/restore file browser state
         file_browser_snapshot get_snapshot() const;
-        void restore_snapshot(
-            const file_browser_snapshot &snapshot);
+        void restore_snapshot(const file_browser_snapshot &snapshot);
+
+        // check if we need to restore file browser state
+        bool restore_browser_state();
     };
 }
 

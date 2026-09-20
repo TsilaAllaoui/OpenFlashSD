@@ -25,8 +25,8 @@ namespace openflash
         pop_up* _instance;
 
     public:
-        pop_up(const bn::string_view& title, bn::sprite_ptr* cursor_sprite_ptr);
-        virtual ~pop_up() = default;
+        pop_up(const bn::string_view& title, bool cancellable = true, bn::sprite_ptr* cursor_sprite_ptr = nullptr);
+        virtual ~pop_up();
         virtual void render();
         virtual void update();
         virtual void dismiss();

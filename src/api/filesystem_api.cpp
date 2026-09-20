@@ -1,11 +1,14 @@
+#include "bn_core.h"
 #include "filesystem_api.h"
+#include "utilities/async.h"
+#include "utilities/pop_up.h"
 
 namespace mock
 {
     bn::vector<openflash::file_entry, max_file_count> mockfiles()
     {
         bn::vector<openflash::file_entry, max_file_count> files;
-    
+
         files.push_back(openflash::file_entry("GAMES", "/GAMES", openflash::file_type::FOLDER, 0, -1, 0, 0));
 
         // GAMES/Pokemon
@@ -134,7 +137,7 @@ namespace mock
         files.push_back(openflash::file_entry("VERSION.txt", "/VERSION.txt", openflash::file_type::NORMAL_FILE, 67, -1, 0, 32));
 
         return files;
-    } 
+    }
 }
 
 namespace openflash
@@ -149,10 +152,13 @@ namespace openflash
 
         bn::vector<file_entry, max_file_count> api::filesystem_api::get_files()
         {
+            // simulating wait time
+            async::delay(60);
+
             // get files from server side (esp32)
             auto files = mock::mockfiles();
             _files.clear();
-            for (const auto& file : files)
+            for (const auto &file : files)
                 _files.emplace_back(file);
             return _files;
         }

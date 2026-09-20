@@ -30,16 +30,6 @@ namespace openflash
     {
         _sdcard_sprite.set_visible(true);
 
-        _file_browser.emplace();
-
-        _file_browser.value().load_files();
-
-        if (_previous_file_browser)
-        {
-            _file_browser->restore_snapshot(
-                *_previous_file_browser);
-        }
-
         // header
         text_helpers::draw_centered(_text_generator,
                                     "File Browser",
@@ -57,6 +47,16 @@ namespace openflash
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
         bg_map_ptr.reload_cells_ref();
         bn::bg_tiles::set_allow_offset(true);
+
+        _file_browser.emplace();
+        _file_browser.value().load_files();
+
+        if (_previous_file_browser && _file_browser->restore_browser_state())
+        {
+            _file_browser->restore_snapshot(
+                *_previous_file_browser);
+        }
+
     }
 
     void file_brower_scene::exit()
@@ -64,7 +64,7 @@ namespace openflash
         _sdcard_sprite.set_visible(false);
         _text_sprites.clear();
 
-        if (_file_browser)
+        if (_file_browser && _file_browser->restore_browser_state())
         {
             _previous_file_browser = _file_browser->get_snapshot();
         }
@@ -89,5 +89,10 @@ namespace openflash
     scene_type file_brower_scene::get_scene_type()
     {
         return _type;
+    }
+
+    void file_brower_scene::delete_file_browser_snapshot()
+    {
+        _previous_file_browser.reset();
     }
 }

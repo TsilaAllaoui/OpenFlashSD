@@ -4,6 +4,7 @@
 
 #include "rom_infos.h"
 #include "rom_info_api.h"
+#include "utilities/async.h"
 
 // Mock respone from server (esp32) side
 namespace mock
@@ -310,6 +311,9 @@ namespace openflash
 
         bn::optional<rom_infos> api::rom_info_api::get_current_rom_infos(const file_entry &file)
         {
+            // simulate wait time
+            async::delay(60);
+
             // get current rom infos from api (esp32)
             auto header = mock::get_gba_header(file.path);
             auto rom_infos = mock::get_gba_file_info(header.data());
