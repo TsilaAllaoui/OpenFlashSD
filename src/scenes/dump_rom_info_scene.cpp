@@ -13,14 +13,15 @@
 #include "flash_screen_bg.h"
 #include "utilities/pop_up.h"
 #include "scene_state_machine.h"
+#include "dump_rom_info_scene_bg.h"
 #include "utilities/text_helpers.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
-
+#include "dump_rom_info_scene.h"
 
 namespace openflash
 {
-    flash_screen_scene::flash_screen_scene()
+    dump_rom_info_scene::dump_rom_info_scene()
         : _type(scene_type::FLASH_SCREEN),
           _background(),
           _pop_up_bg(),
@@ -30,7 +31,7 @@ namespace openflash
         _gbacart_sprite.set_visible(false);
     }
 
-    void flash_screen_scene::enter()
+    void dump_rom_info_scene::enter()
     {
         _gbacart_sprite.set_visible(true);
         _gbacart_sprite.set_bg_priority(0);
@@ -43,7 +44,7 @@ namespace openflash
         _background.emplace(bn::regular_bg_item(
                                 bn::regular_bg_tiles_items::tiles,
                                 bn::regular_bg_tiles_items::tiles_palette,
-                                openflash::flash_screen_bg_map_item)
+                                openflash::dump_rom_info_scene_bg_map_item)
                                 .create_bg(0, 0));
         _background.value().set_top_left_position(0, 0);
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
@@ -51,77 +52,74 @@ namespace openflash
         _background->set_priority(0);
         bn::bg_tiles::set_allow_offset(true);
 
-        auto rom_infos = flash_context::instance().get_current_rom_infos();
+        auto cart_infos = flash_context::instance().get_current_cart_infos();
 
-        if (rom_infos.has_value())
+        if (cart_infos.has_value())
         {
+            auto current_rom_infos_in_cart = cart_infos->cart_rom_infos;
+
             bn::string_view label = "Name: ";
             text_helpers::draw_label_value(_text_generator,
                                            label,
-                                           rom_infos->name.empty() ? "Unkown name" : rom_infos->name,
+                                           current_rom_infos_in_cart.name.empty() ? "Unkown name" : current_rom_infos_in_cart.name,
                                            -bn::display::width() / 2 + 20,
                                            bn::display::width() / 6,
-                                           text_y_top,
+                                           dump_scene_text_y_top,
                                            _text_sprites);
 
             label = "Game Code: ";
             text_helpers::draw_label_value(_text_generator,
                                            label,
-                                           rom_infos->game_code.empty() ? "Unkown game code" : rom_infos->game_code,
+                                           current_rom_infos_in_cart.game_code.empty() ? "Unkown game code" : current_rom_infos_in_cart.game_code,
                                            -bn::display::width() / 2 + 20,
                                            bn::display::width() / 6,
-                                           text_y_top + text_spacing_y,
+                                           dump_scene_text_y_top + dump_scene_text_y_spacing,
                                            _text_sprites);
 
             label = "Marker code";
             text_helpers::draw_label_value(_text_generator,
                                            label,
-                                           rom_infos->maker_code.empty() ? "Unkown marker code" : rom_infos->maker_code,
+                                           current_rom_infos_in_cart.maker_code.empty() ? "Unkown marker code" : current_rom_infos_in_cart.maker_code,
                                            -bn::display::width() / 2 + 20,
                                            bn::display::width() / 6,
-                                           text_y_top + text_spacing_y * 2,
+                                           dump_scene_text_y_top + dump_scene_text_y_spacing * 2,
                                            _text_sprites);
 
             label = "Save type";
             text_helpers::draw_label_value(_text_generator,
                                            label,
-                                           string_helpers::to_string(rom_infos->savetype),
+                                           string_helpers::to_string(current_rom_infos_in_cart.savetype),
                                            -bn::display::width() / 2 + 20,
                                            bn::display::width() / 6,
-                                           text_y_top + text_spacing_y * 3,
+                                           dump_scene_text_y_top + dump_scene_text_y_spacing * 3,
                                            _text_sprites);
-        }
-
-        auto cart_infos = flash_context::instance().get_current_cart_infos();
-
-        if (cart_infos.has_value())
-        {
-            text_helpers::draw_centered(_text_generator, cart_infos->name, 40, _text_sprites);
+            
+                                           text_helpers::draw_centered(_text_generator, cart_infos->name, 40, _text_sprites);
         }
 
         text_helpers::draw_centered(_text_generator,
-                                    "A:Flash, B: Back, SLCT: Refresh",
+                                    "A: Dump, B: Back, SLCT: Refresh",
                                     65, _text_sprites);
 
         for (auto &sprite : _text_sprites)
             sprite.set_bg_priority(0);
     }
 
-    void flash_screen_scene::exit()
+    void dump_rom_info_scene::exit()
     {
         _gbacart_sprite.set_visible(false);
         _text_sprites.clear();
         _background.reset();
     }
 
-    void flash_screen_scene::update()
+    void dump_rom_info_scene::update()
     {
         while (true)
         {
             bn::core::update();
             if (bn::keypad::b_pressed())
             {
-                scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
+                scene_state_machine::instance().request_scene_state(scene_type::MAIN_MENU);
                 break;
             }
             if (bn::keypad::select_pressed())
@@ -133,11 +131,11 @@ namespace openflash
         }
     }
 
-    void flash_screen_scene::render()
+    void dump_rom_info_scene::render()
     {
     }
 
-    scene_type flash_screen_scene::get_scene_type()
+    scene_type dump_rom_info_scene::get_scene_type()
     {
         return _type;
     }

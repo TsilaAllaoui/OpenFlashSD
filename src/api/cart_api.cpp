@@ -1,3 +1,4 @@
+#include "pop_up.h"
 #include "cart_api.h"
 #include "utilities/async.h"
 
@@ -13,6 +14,8 @@ namespace openflash
 
         bn::optional<cart_infos> cart_api::get_current_cart_infos()
         {
+            auto popup = pop_up("Getting cart infos...", false);
+
             // simulating wait time
             async::delay(60);
 

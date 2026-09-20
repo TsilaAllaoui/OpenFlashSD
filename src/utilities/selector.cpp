@@ -30,8 +30,6 @@ namespace openflash
           _text_sprites(),
           _selector_bg()
     {
-        _text_generator.set_bg_priority(0);
-        _text_generator.set_center_alignment();
     }
 
     void selector::render()

@@ -152,6 +152,8 @@ namespace openflash
 
         bn::vector<file_entry, max_file_count> api::filesystem_api::get_files()
         {
+            auto popup = pop_up("Loading files...", false);
+
             // simulating wait time
             async::delay(60);
 

@@ -37,6 +37,8 @@ namespace openflash
             _current_scene = &_file_brower_scene;
         else if (type == scene_type::FLASH_SCREEN)
             _current_scene = &_flash_screen_bg_scene;
+        else if (type == scene_type::DUMP_ROM_INFO)
+            _current_scene = &_dump_rom_info_scene;
         // Add more scenes here, not exception handling for now
 
         _current_scene->enter();

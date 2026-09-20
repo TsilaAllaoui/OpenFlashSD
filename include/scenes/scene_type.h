@@ -7,7 +7,8 @@ namespace openflash
     {
         MAIN_MENU,
         FILE_BROWSER,
-        FLASH_SCREEN
+        FLASH_SCREEN,
+        DUMP_ROM_INFO,
     };
 }
 

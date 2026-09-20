@@ -2,6 +2,7 @@
 #include "bn_string_view.h"
 #include <cstdint>
 
+#include "pop_up.h"
 #include "rom_infos.h"
 #include "rom_info_api.h"
 #include "utilities/async.h"
@@ -311,6 +312,8 @@ namespace openflash
 
         bn::optional<rom_infos> api::rom_info_api::get_current_rom_infos(const file_entry &file)
         {
+            auto popup = pop_up("Getting rom infos...", false);
+
             // simulate wait time
             async::delay(60);
 

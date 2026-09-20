@@ -56,7 +56,9 @@ namespace openflash
                                     _text_sprites);
 
         // selector
+        _selector = selector();
         _selector.render();
+        _selector.update_position(_current_menu_index);
     }
 
     void main_menu_bg_scene::exit()
@@ -85,6 +87,10 @@ namespace openflash
             if (_current_menu_index == 0)
             {
                 scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
+            }
+            else if (_current_menu_index == 1)
+            {
+                scene_state_machine::instance().request_scene_state(scene_type::DUMP_ROM_INFO);
             }
         }
         if (bn::keypad::select_pressed())

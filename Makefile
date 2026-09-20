@@ -35,7 +35,7 @@ TARGET      	:=  $(notdir $(CURDIR))
 BUILD       	:=  build
 LIBBUTANO   	:=  lib/butano/butano
 PYTHON      	:=  python3
-SOURCES     	:=  $(shell find src -type d) lib/butano/common/src
+SOURCES     	:=  $(shell find src -type d)
 INCLUDES    	:=  $(shell find include -type d) lib/butano/common/include
 DATA        	:=
 GRAPHICS    	:=  graphics lib/butano/common/graphics
@@ -45,14 +45,14 @@ DMGAUDIO            :=
 DMGAUDIOBACKEND     := null
 ROMTITLE    	:=  ROM TITLE
 ROMCODE     	:=  SBTP
-USERFLAGS   	:=  #-O0 -g3 -fno-inline -fno-omit-frame-pointer #disable this if debugging
+USERFLAGS   	:=  -Os -flto=auto #-O0 -g3 -fno-inline -fno-omit-frame-pointer #disable this if debugging
 USERCXXFLAGS	:=  
 USERASFLAGS 	:=  
 USERLDFLAGS 	:=  
 USERLIBDIRS 	:=  
 USERLIBS    	:=  
 DEFAULTLIBS 	:=  
-STACKTRACE		:=	1
+STACKTRACE		:=
 USERBUILD   	:=  
 EXTTOOL     	:=  
 

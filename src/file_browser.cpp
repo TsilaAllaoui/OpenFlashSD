@@ -48,7 +48,6 @@ namespace openflash
         _files.clear();
 
         // getting files from server side
-        pop_up popup("Loading files...", false);
         _files = api::filesystem_api::instance().get_files();
 
         // updating current depth files
@@ -234,13 +233,11 @@ namespace openflash
             if (file.is_gba_file())
             {
                 // update rom infos
-                pop_up popup("Getting rom infos...", false);
                 auto rom_infos = api::rom_info_api::instance().get_current_rom_infos(file);
                 if (rom_infos.has_value())
                     flash_context::instance().set_current_rom_infos(rom_infos.value());
 
                 // update cart infos
-                popup = pop_up("Getting cart infos...", false);
                 auto cart_infos = api::cart_api::instance().get_current_cart_infos();
                 if (cart_infos.has_value())
                     flash_context::instance().set_current_cart_infos(cart_infos.value());
