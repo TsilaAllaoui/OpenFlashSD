@@ -18,7 +18,7 @@ constexpr bn::array<bn::point, 4> selector_positions = {bn::point(11, 88),
                                                         bn::point(125, 88),
                                                         bn::point(180, 88)};
 
-constexpr bn::array<bn::string_view, 4> titles = {"Flash Cart",
+constexpr bn::array<bn::string_view, 4> titles = {" Flash Cart",
                                                   "Cart Dump",
                                                   "Save Manager",
                                                   "Settings"};

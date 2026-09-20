@@ -7,14 +7,16 @@
 #include "bn_sprite_items_gbacart.h"
 
 #include "file_entry.h"
-#include "flash_screen_bg.h"
 #include "api/cart_api.h"
 #include "flash_context.h"
+#include "string_helpers.h"
+#include "flash_screen_bg.h"
 #include "utilities/pop_up.h"
 #include "scene_state_machine.h"
 #include "utilities/text_helpers.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
+
 
 namespace openflash
 {
@@ -32,8 +34,6 @@ namespace openflash
     {
         _gbacart_sprite.set_visible(true);
         _gbacart_sprite.set_bg_priority(0);
-
-        _text_generator.set_left_alignment();
 
         // header
         text_helpers::draw_centered(_text_generator, "ROM Information", screen_top + 12, _text_sprites);
@@ -85,10 +85,10 @@ namespace openflash
             label = "Save type";
             text_helpers::draw_label_value(_text_generator,
                                            label,
-                                           rom_infos->maker_code.empty() ? "Unkown marker code" : rom_infos->maker_code,
+                                           string_helpers::to_string(rom_infos->savetype),
                                            -bn::display::width() / 2 + 20,
                                            bn::display::width() / 6,
-                                           text_y_top + text_spacing_y * 2,
+                                           text_y_top + text_spacing_y * 3,
                                            _text_sprites);
         }
 
