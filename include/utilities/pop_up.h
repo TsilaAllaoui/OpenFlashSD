@@ -20,16 +20,21 @@ namespace openflash
         bn::optional<bn::regular_bg_ptr> _pop_up_bg;
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
-        bn::sprite_ptr* _cursor_sprite_ptr;
+        bn::sprite_ptr *_cursor_sprite_ptr;
         bn::optional<bn::fixed> _old_cursor_pos;
-        pop_up* _instance;
+        pop_up *_instance;
+        bool _confirmation_response;
 
     public:
-        pop_up(const bn::string_view& title, bool cancellable = true, bn::sprite_ptr* cursor_sprite_ptr = nullptr);
+        pop_up(const bn::string_view &title,
+               bool cancellable = true,
+               bool acceptable = false,
+               bn::sprite_ptr *cursor_sprite_ptr = nullptr);
         virtual ~pop_up();
         virtual void render();
         virtual void update();
         virtual void dismiss();
+        bool get_confirmation_response();
     };
 }
 

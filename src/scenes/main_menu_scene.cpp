@@ -16,6 +16,7 @@
 #include "flash_context.h"
 #include "utilities/pop_up.h"
 #include "utilities/text_helpers.h"
+#include "main_menu_scene.h"
 
 namespace openflash
 {
@@ -110,5 +111,10 @@ namespace openflash
     scene_type main_menu_bg_scene::get_scene_type()
     {
         return _type;
+    }
+    
+    void main_menu_bg_scene::set_title(const bn::string_view &title)
+    {
+        _title = title;
     }
 }

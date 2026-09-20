@@ -19,12 +19,14 @@ namespace openflash
 {
     pop_up::pop_up(const bn::string_view &title,
                    bool cancellable,
+                   bool acceptable,
                    bn::sprite_ptr *cursor_sprite_ptr)
         : _title(title),
           _pop_up_bg(),
           _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
           _text_sprites(),
-          _cursor_sprite_ptr(cursor_sprite_ptr)
+          _cursor_sprite_ptr(cursor_sprite_ptr),
+          _confirmation_response(false)
     {
         bn::bg_tiles::set_allow_offset(false);
         _pop_up_bg.emplace(bn::regular_bg_item(
@@ -50,6 +52,16 @@ namespace openflash
                                            "Press B to go back",
                                            title_x,
                                            title_y,
+                                           _text_sprites);
+        }
+
+        if (acceptable)
+        {
+
+            text_helpers::draw_centered_at(_text_generator,
+                                           "Press A to continue",
+                                           title_x,
+                                           title_y - 17,
                                            _text_sprites);
         }
 
@@ -80,6 +92,13 @@ namespace openflash
             bn::core::update();
             if (bn::keypad::b_pressed())
             {
+                _confirmation_response = false;
+                dismiss();
+                break;
+            }
+            if (bn::keypad::a_pressed())
+            {
+                _confirmation_response = true;
                 dismiss();
                 break;
             }
@@ -93,5 +112,10 @@ namespace openflash
 
         if (_cursor_sprite_ptr && _old_cursor_pos.has_value())
             _cursor_sprite_ptr->set_y(_old_cursor_pos.value());
+    }
+
+    bool pop_up::get_confirmation_response()
+    {
+        return _confirmation_response;
     }
 }

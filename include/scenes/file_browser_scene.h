@@ -10,6 +10,7 @@ namespace openflash
     class file_brower_scene : public i_scene
     {
     private:
+        bn::string_view _title;
         bn::optional<file_browser> _file_browser;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
@@ -27,6 +28,7 @@ namespace openflash
         virtual void render();
         virtual scene_type get_scene_type();
         void delete_file_browser_snapshot();
+        virtual void set_title(const bn::string_view& title);
     };
 }
 

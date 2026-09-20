@@ -39,6 +39,15 @@ namespace openflash
             _current_scene = &_flash_screen_bg_scene;
         else if (type == scene_type::DUMP_ROM_INFO)
             _current_scene = &_dump_rom_info_scene;
+        else if (type == scene_type::PROCESS_PROGRESS)
+        {
+            auto origin_scene_type = _current_scene->get_scene_type();
+            _current_scene = &_process_progress_scene;
+            if (origin_scene_type == scene_type::DUMP_ROM_INFO)
+                _current_scene->set_title("Dump Cartridge");
+            else if (origin_scene_type == scene_type::FLASH_SCREEN)
+                _current_scene->set_title("Flashing Cartridge");
+        }
         // Add more scenes here, not exception handling for now
 
         _current_scene->enter();

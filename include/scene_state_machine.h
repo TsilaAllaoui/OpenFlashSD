@@ -7,6 +7,7 @@
 #include "scenes/file_browser_scene.h"
 #include "scenes/flash_screen_scene.h"
 #include "scenes/dump_rom_info_scene.h"
+#include "scenes/process_progress_scene.h"
 
 namespace openflash
 {
@@ -19,6 +20,7 @@ namespace openflash
         main_menu_bg_scene _main_menu_bg_scene;
         flash_screen_scene _flash_screen_bg_scene;
         dump_rom_info_scene _dump_rom_info_scene;
+        process_progress_scene _process_progress_scene;
 
         bn::optional<scene_type> _requested_scene;
 

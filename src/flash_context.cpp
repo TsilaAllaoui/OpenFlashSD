@@ -22,7 +22,6 @@ namespace openflash
         return _current_rom_infos;
     }
 
-
     void flash_context::set_current_cart_infos(const cart_infos &infos)
     {
         _current_cart_infos = infos;

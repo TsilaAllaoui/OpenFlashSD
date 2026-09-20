@@ -15,6 +15,7 @@ namespace openflash
     class main_menu_bg_scene : public i_scene
     {
     private:
+        bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
         selector _selector;
@@ -29,6 +30,7 @@ namespace openflash
         virtual void update();
         virtual void render();
         virtual scene_type get_scene_type();
+        virtual void set_title(const bn::string_view& title);
     };
 }
 

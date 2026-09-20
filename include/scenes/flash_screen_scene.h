@@ -19,6 +19,7 @@ namespace openflash
     class flash_screen_scene : public i_scene
     {
     private:
+        bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
         bn::optional<bn::regular_bg_ptr> _pop_up_bg;
@@ -33,6 +34,7 @@ namespace openflash
         virtual void update();
         virtual void render();
         virtual scene_type get_scene_type();
+        virtual void set_title(const bn::string_view& title);
     };
 }
 

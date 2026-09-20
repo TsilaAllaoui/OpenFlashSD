@@ -25,7 +25,7 @@
 namespace openflash
 {
     dump_rom_info_scene::dump_rom_info_scene()
-        : _type(scene_type::FLASH_SCREEN),
+        : _type(scene_type::DUMP_ROM_INFO),
           _background(),
           _pop_up_bg(),
           _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
@@ -166,6 +166,28 @@ namespace openflash
                     sprite.set_bg_priority(0);
                 _background->set_priority(0);
             }
+            if (bn::keypad::a_pressed())
+            {
+                for (auto &sprite : _text_sprites)
+                    sprite.set_bg_priority(1);
+                for (auto &sprite : _sprites)
+                    sprite.set_bg_priority(1);
+                _background->set_priority(1);
+
+                pop_up popup("Flash Rom?", true, true);
+                popup.update();
+                if (popup.get_confirmation_response())
+                {
+                    scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
+                    return;
+                }
+
+                for (auto &sprite : _text_sprites)
+                    sprite.set_bg_priority(0);
+                for (auto &sprite : _sprites)
+                    sprite.set_bg_priority(0);
+                _background->set_priority(0);
+            }
         }
     }
 
@@ -176,5 +198,10 @@ namespace openflash
     scene_type dump_rom_info_scene::get_scene_type()
     {
         return _type;
+    }
+
+    void dump_rom_info_scene::set_title(const bn::string_view& title)
+    {
+        _title = title;
     }
 }

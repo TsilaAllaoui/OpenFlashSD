@@ -95,4 +95,9 @@ namespace openflash
     {
         _previous_file_browser.reset();
     }
+
+    void file_brower_scene::set_title(const bn::string_view &title)
+    {
+        _title = title;
+    }
 }

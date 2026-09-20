@@ -14,6 +14,7 @@ namespace openflash
         virtual void render() = 0;
         virtual void update() = 0;
         virtual scene_type get_scene_type() = 0;
+        virtual void set_title(const bn::string_view& title) = 0;
     };
 }
 

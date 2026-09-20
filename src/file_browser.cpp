@@ -75,7 +75,7 @@ namespace openflash
         if (_current_depth_files.empty())
         {
             // Pop up
-            auto popup = pop_up("Empty folder!", true, &_cursor_sprite);
+            auto popup = pop_up("Empty folder!", true, false, &_cursor_sprite);
             popup.render();
             popup.update();
             return true;

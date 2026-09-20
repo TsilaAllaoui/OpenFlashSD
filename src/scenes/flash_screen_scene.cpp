@@ -16,6 +16,7 @@
 #include "utilities/text_helpers.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
+#include "flash_screen_scene.h"
 
 namespace openflash
 {
@@ -151,5 +152,10 @@ namespace openflash
     scene_type flash_screen_scene::get_scene_type()
     {
         return _type;
+    }
+
+    void flash_screen_scene::set_title(const bn::string_view &title)
+    {
+        _title = title;
     }
 }
