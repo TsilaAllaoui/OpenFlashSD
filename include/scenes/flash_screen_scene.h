@@ -23,7 +23,8 @@ namespace openflash
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
         bn::optional<bn::regular_bg_ptr> _pop_up_bg;
-        bn::sprite_text_generator _text_generator;
+        bn::sprite_text_generator _text_generator_8x16;
+        bn::sprite_text_generator _text_generator_8x8;
         bn::vector<bn::sprite_ptr, flash_scene_max_text_sprite_count> _text_sprites;
         bn::sprite_ptr _gbacart_sprite;
     public:

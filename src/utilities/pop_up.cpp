@@ -11,6 +11,7 @@
 #include "utilities/text_helpers.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
+#include "common_variable_8x8_sprite_font.h"
 
 constexpr int title_x = -4;
 constexpr int title_y = 16;
@@ -23,7 +24,8 @@ namespace openflash
                    bn::sprite_ptr *cursor_sprite_ptr)
         : _title(title),
           _pop_up_bg(),
-          _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
+          _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
+          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
           _text_sprites(),
           _cursor_sprite_ptr(cursor_sprite_ptr),
           _confirmation_response(false)
@@ -39,31 +41,35 @@ namespace openflash
         _pop_up_bg->set_priority(0);
         bn::bg_tiles::set_allow_offset(true);
 
-        text_helpers::draw_centered_at(_text_generator,
-                                       _title,
+        auto final_title_y = -title_y - 8;
+        text_helpers::draw_centered(_text_generator_8x16,
+                                    _title,
+                                    final_title_y,
+                                    _text_sprites);
+
+        bn::string<64> body_text;
+
+        if (acceptable || cancellable)
+        {
+            if (acceptable)
+            {
+                body_text += "A: Accept";
+                if (cancellable)
+                    body_text += "   B: back";
+            }
+            else if (cancellable)
+            {
+                body_text += "B: back";
+            }
+        }
+        else
+            body_text += "Please wait...";
+
+        text_helpers::draw_centered_at(_text_generator_8x8,
+                                       body_text,
                                        title_x,
-                                       -title_y + (!cancellable ? 15 : 0),
+                                       title_y,
                                        _text_sprites);
-
-        if (cancellable)
-        {
-
-            text_helpers::draw_centered_at(_text_generator,
-                                           "Press B to go back",
-                                           title_x,
-                                           title_y,
-                                           _text_sprites);
-        }
-
-        if (acceptable)
-        {
-
-            text_helpers::draw_centered_at(_text_generator,
-                                           "Press A to continue",
-                                           title_x,
-                                           title_y - 17,
-                                           _text_sprites);
-        }
 
         for (auto &sprite : _text_sprites)
         {

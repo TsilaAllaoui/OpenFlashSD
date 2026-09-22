@@ -174,7 +174,7 @@ namespace openflash
                     sprite.set_bg_priority(1);
                 _background->set_priority(1);
 
-                pop_up popup("Flash Rom?", true, true);
+                pop_up popup("Dump Cart?", true, true);
                 popup.update();
                 if (popup.get_confirmation_response())
                 {

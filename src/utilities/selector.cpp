@@ -1,14 +1,18 @@
 #include "selector.h"
 #include "selector_bg.h"
 
-#include "bn_bg_tiles.h"
 #include "bn_display.h"
+#include "bn_bg_tiles.h"
+#include "bn_bg_palette_ptr.h"
+#include "bn_regular_bg_ptr.h"
+#include "bn_regular_bg_item.h"
 #include "bn_regular_bg_item.h"
 #include "bn_regular_bg_map_ptr.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 
-#include "common_variable_8x16_sprite_font.h"
 #include "utilities/text_helpers.h"
+#include "utilities/color_helpers.h"
+#include "common_variable_8x16_sprite_font.h"
 
 constexpr int selector_width = 48;
 constexpr int title_offset_y = 12;
@@ -28,31 +32,48 @@ namespace openflash
     selector::selector()
         : _text_generator(common::variable_8x16_sprite_font),
           _text_sprites(),
-          _selector_bg()
+          _selector_bg(),
+          _bg_map()
     {
+        bn::bg_tiles::set_allow_offset(false);
+
+        auto bg_item = bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
+                                           bn::regular_bg_tiles_items::tiles_palette,
+                                           openflash::selector_bg_map_item);
+
+        bn::regular_bg_ptr bg_ptr = bg_item.create_bg(0, 0);
+
+        _selector_bg.emplace(bg_ptr);
+
+        _bg_map.emplace(bg_ptr.map());
+
+        _bg_map->reload_cells_ref();
+
+        _selector_bg->set_priority(1);
+
+        bn::bg_tiles::set_allow_offset(true);
     }
 
     void selector::render()
     {
         if (_selector_bg)
         {
+            static bn::color first_color(0, 17, 17);
+            static bn::color second_color(0, 25, 25);
+            static int frames = 0;
+            static bool change = false;
+            frames++;
+            if (frames >= 25)
+            {
+                frames = 0;
+                if (!change)
+                    color_helpers::replace_bg_color(*_selector_bg, first_color, second_color);
+                else
+                    color_helpers::replace_bg_color(*_selector_bg, second_color, first_color);
+                change = !change;
+            }
             return;
         }
-
-        bn::bg_tiles::set_allow_offset(false);
-
-        _selector_bg.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
-                                                 bn::regular_bg_tiles_items::tiles_palette,
-                                                 openflash::selector_bg_map_item)
-                                 .create_bg(0, 0));
-
-        bn::regular_bg_map_ptr selector_map = _selector_bg->map();
-
-        selector_map.reload_cells_ref();
-
-        _selector_bg->set_priority(1);
-
-        bn::bg_tiles::set_allow_offset(true);
 
         update_position(0);
     }
@@ -65,6 +86,7 @@ namespace openflash
     {
         _text_sprites.clear();
         _selector_bg.reset();
+        _bg_map.reset();
     }
 
     void selector::update_position(int index)

@@ -19,7 +19,8 @@ namespace openflash
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
         selector _selector;
-        bn::sprite_text_generator _text_generator;
+        bn::sprite_text_generator _text_generator_8x16;
+        bn::sprite_text_generator _text_generator_8x8;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
         int _current_menu_index;
     public:

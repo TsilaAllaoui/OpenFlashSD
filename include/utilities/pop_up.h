@@ -18,7 +18,8 @@ namespace openflash
     private:
         bn::string_view _title;
         bn::optional<bn::regular_bg_ptr> _pop_up_bg;
-        bn::sprite_text_generator _text_generator;
+        bn::sprite_text_generator _text_generator_8x16;
+        bn::sprite_text_generator _text_generator_8x8;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
         bn::sprite_ptr *_cursor_sprite_ptr;
         bn::optional<bn::fixed> _old_cursor_pos;

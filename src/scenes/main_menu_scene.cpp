@@ -4,19 +4,21 @@
 #include "bn_bg_tiles.h"
 #include "bn_regular_bg_item.h"
 #include "bn_regular_bg_map_ptr.h"
-
-#include "main_menu_bg.h"
-#include "pop_up_bg.h"
-#include "file_entry.h"
-#include "scene_state_machine.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
-#include "common_variable_8x16_sprite_font.h"
 
 #include "cart_api.h"
+#include "pop_up_bg.h"
+#include "file_entry.h"
+#include "main_menu_bg.h"
 #include "flash_context.h"
-#include "utilities/pop_up.h"
-#include "utilities/text_helpers.h"
 #include "main_menu_scene.h"
+#include "utilities/pop_up.h"
+#include "scene_state_machine.h"
+#include "utilities/text_helpers.h"
+#include "utilities/color_helpers.h"
+#include "common_variable_8x8_sprite_font.h"
+#include "common_variable_8x16_sprite_font.h"
+
 
 namespace openflash
 {
@@ -24,17 +26,18 @@ namespace openflash
         : _type(scene_type::MAIN_MENU),
           _background(),
           _selector(),
-          _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
+          _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
+          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
           _current_menu_index(0)
     {
     }
 
     void main_menu_bg_scene::enter()
     {
-        _text_generator.set_left_alignment();
+        _text_generator_8x16.set_left_alignment();
 
         // header
-        text_helpers::draw_centered(_text_generator,
+        text_helpers::draw_centered(_text_generator_8x16,
                                     "OpenFlashSD",
                                     screen_top + 12,
                                     _text_sprites);
@@ -51,8 +54,8 @@ namespace openflash
         bg_map_ptr.reload_cells_ref();
         bn::bg_tiles::set_allow_offset(true);
 
-        text_helpers::draw_centered(_text_generator,
-                                    "A: Choose, SELECT: Refresh cart",
+        text_helpers::draw_centered(_text_generator_8x8,
+                                    "A: Choose      SELECT: Refresh cart",
                                     65,
                                     _text_sprites);
 
@@ -71,6 +74,7 @@ namespace openflash
 
     void main_menu_bg_scene::update()
     {
+        _selector.update();
         if (bn::keypad::right_pressed())
         {
             if (_current_menu_index < 3)
@@ -106,13 +110,14 @@ namespace openflash
 
     void main_menu_bg_scene::render()
     {
+        _selector.render();
     }
 
     scene_type main_menu_bg_scene::get_scene_type()
     {
         return _type;
     }
-    
+
     void main_menu_bg_scene::set_title(const bn::string_view &title)
     {
         _title = title;

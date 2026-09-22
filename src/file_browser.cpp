@@ -178,6 +178,36 @@ namespace openflash
             _browser_state.need_update = true;
             render_file_list();
         }
+        if (bn::keypad::right_pressed())
+        {
+            if (_browser_state.current_file_index < _current_depth_files.size() - 1)
+            {
+                _browser_state.current_file_index += 5;
+                if (_browser_state.current_file_index >= _current_depth_files.size() - 1)
+                    _browser_state.current_file_index = _current_depth_files.size() - 1;
+            }
+            if (_browser_state.current_file_index > bn::min(max_file_count_pagination - 1, _current_depth_files.size() - 1))
+                _cursor_sprite.set_y(file_y + (max_file_count_pagination - 1) * text_spacing_y);
+            else
+                _cursor_sprite.set_y(file_y + _browser_state.current_file_index * text_spacing_y);
+            _browser_state.need_update = true;
+            render_file_list();
+        }
+        if (bn::keypad::left_pressed())
+        {
+            if (_browser_state.current_file_index > 0)
+            {
+                _browser_state.current_file_index -= 5;
+                if (_browser_state.current_file_index < 0)
+                    _browser_state.current_file_index = 0;
+                if (_browser_state.current_file_index / max_file_count_pagination < 1)
+                {
+                    _cursor_sprite.set_y(file_y + _browser_state.current_file_index * text_spacing_y);
+                }
+            }
+            _browser_state.need_update = true;
+            render_file_list();
+        }
         if (bn::keypad::a_pressed())
         {
             if (_current_depth_files.empty())

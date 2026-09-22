@@ -45,7 +45,8 @@ DMGAUDIO            :=
 DMGAUDIOBACKEND     := null
 ROMTITLE    	:=  ROM TITLE
 ROMCODE     	:=  SBTP
-USERFLAGS   	:=  -Os -flto=auto #-O0 -g3 -fno-inline -fno-omit-frame-pointer #disable this if debugging
+USERFLAGS   	:=  -O0 -g3 -fno-inline -fno-omit-frame-pointer
+# USERFLAGS   	:=  -Os -flto=auto
 USERCXXFLAGS	:=  
 USERASFLAGS 	:=  
 USERLDFLAGS 	:=  
