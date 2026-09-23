@@ -7,9 +7,12 @@ namespace openflash
 {
     namespace mock
     {
-        bn::vector<file_entry, max_file_count> mock_file_entries()
+        const bn::vector<file_entry, max_file_count> &mock_file_entries()
         {
-            bn::vector<file_entry, max_file_count> files;
+            static bn::vector<file_entry, max_file_count> files;
+
+            if (!files.empty())
+                return files;
 
             files.push_back(file_entry("GAMES", "/GAMES", file_type::FOLDER, 0, -1, 0, 0));
 
@@ -66,13 +69,13 @@ namespace openflash
             files.push_back(file_entry("SAVES", "/SAVES", file_type::FOLDER, 30, -1, 0, 0));
 
             files.push_back(file_entry("Pokemon", "/SAVES/Pokemon", file_type::FOLDER, 31, 30, 1, 0));
-            files.push_back(file_entry("Pokemon Emerald.sav", "/SAVES/Pokemon/Pokemon Emerald.sav", file_type::NORMAL_FILE, 32, 31, 2, 131072));
-            files.push_back(file_entry("Pokemon FireRed.sav", "/SAVES/Pokemon/Pokemon FireRed.sav", file_type::NORMAL_FILE, 33, 31, 2, 131072));
+            files.push_back(file_entry("Pokemon Emerald.sav", "/SAVES/Pokemon/Pokemon Emerald.sav", file_type::SAVE_FILE, 32, 31, 2, 131072));
+            files.push_back(file_entry("Pokemon FireRed.sav", "/SAVES/Pokemon/Pokemon FireRed.sav", file_type::SAVE_FILE, 33, 31, 2, 131072));
 
             files.push_back(file_entry("Backups", "/SAVES/Backups", file_type::FOLDER, 34, 30, 1, 0));
             files.push_back(file_entry("2026", "/SAVES/Backups/2026", file_type::FOLDER, 35, 34, 2, 0));
             files.push_back(file_entry("January", "/SAVES/Backups/2026/January", file_type::FOLDER, 36, 35, 3, 0));
-            files.push_back(file_entry("backup.sav", "/SAVES/Backups/2026/January/backup.sav", file_type::NORMAL_FILE, 37, 36, 4, 131072));
+            files.push_back(file_entry("backup.sav", "/SAVES/Backups/2026/January/backup.sav", file_type::SAVE_FILE, 37, 36, 4, 131072));
 
             // ============================================================
             // ROMS

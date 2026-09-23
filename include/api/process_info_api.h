@@ -14,10 +14,12 @@ namespace openflash
             process_info_api();
 
             bn::optional<process_infos> _current_process_infos;
+            int _frames;
 
         public:
             ~process_info_api() = default;
             static process_info_api &instance();
+            void start(process_type type);
             bn::optional<process_infos> get_current_process_infos();
             void reset();
         };

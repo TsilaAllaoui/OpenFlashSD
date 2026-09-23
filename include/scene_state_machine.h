@@ -8,6 +8,8 @@
 #include "scenes/flash_screen_scene.h"
 #include "scenes/dump_rom_info_scene.h"
 #include "scenes/process_progress_scene.h"
+#include "scenes/process_save_info_scene.h"
+#include "scenes/save_process_selection_scene.h"
 
 namespace openflash
 {
@@ -21,6 +23,8 @@ namespace openflash
         flash_screen_scene _flash_screen_bg_scene;
         dump_rom_info_scene _dump_rom_info_scene;
         process_progress_scene _process_progress_scene;
+        process_save_info_scene _process_save_info_scene;
+        save_process_selection_scene _save_process_selection_scene;
 
         bn::optional<scene_type> _requested_scene;
 
@@ -32,6 +36,7 @@ namespace openflash
         void render_current_scene();
         void update_current_scene();
         void request_scene_state(scene_type type);
+        scene_type get_last_request_scene();
     };
 }
 

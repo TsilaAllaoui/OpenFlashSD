@@ -9,6 +9,8 @@ namespace openflash
         FILE_BROWSER,
         FLASH_SCREEN,
         DUMP_ROM_INFO,
+        SAVE_PROCESS_SCREEN,
+        SAVE_PROCESS_SELECTION_SCREEN,
         PROCESS_PROGRESS
     };
 }

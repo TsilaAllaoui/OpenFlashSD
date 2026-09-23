@@ -17,15 +17,13 @@
 constexpr int selector_width = 48;
 constexpr int title_offset_y = 12;
 
-constexpr bn::array<bn::point, 4> selector_positions = {bn::point(11, 88),
-                                                        bn::point(67, 88),
-                                                        bn::point(125, 88),
-                                                        bn::point(180, 88)};
+constexpr bn::array<bn::point, 3> selector_positions = {bn::point(19, 88),
+                                                        bn::point(99, 88),
+                                                        bn::point(172, 88)};
 
-constexpr bn::array<bn::string_view, 4> titles = {" Flash Cart",
+constexpr bn::array<bn::string_view, 3> titles = {" Flash Cart",
                                                   "Cart Dump",
-                                                  "Save Manager",
-                                                  "Settings"};
+                                                  "Save Manager"};
 
 namespace openflash
 {
@@ -113,7 +111,7 @@ namespace openflash
 
         text_helpers::draw_centered_at(_text_generator,
                                        titles[index],
-                                       text_x,
+                                       text_x - (index == 2 ? 4 : 0),
                                        text_y,
                                        _text_sprites);
     }

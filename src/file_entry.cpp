@@ -34,4 +34,9 @@ namespace openflash
     {
         return type == file_type::GBA_FILE;
     }
+
+    bool file_entry::is_save_file() const
+    {
+        return type == file_type::SAVE_FILE;
+    }
 }

@@ -20,7 +20,9 @@ namespace openflash
     enum class process_type
     {
         DUMPING,
-        FLASHING
+        FLASHING,
+        BACKUP_SAVE,
+        RESTORE_SAVE
     };
 
     struct process_infos

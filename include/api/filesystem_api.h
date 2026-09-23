@@ -1,6 +1,7 @@
 #ifndef FILESYSTEM_API_H
 #define FILESYSTEM_API_H
 
+#include "bn_optional.h"
 #include "bn_vector.h"
 
 #include "file_entry.h"
@@ -12,16 +13,23 @@ namespace openflash
         class filesystem_api
         {
         private:
-            filesystem_api() = default;
+            filesystem_api();
             ~filesystem_api() = default;
 
             bn::vector<file_entry, max_file_count> _files;
+            bn::optional<file_type> _file_filter;
+            bool _loading;
+            bool _response_ready;
+            int _mock_frames;
 
         public:
-        static filesystem_api& instance();
-            bn::vector<file_entry, max_file_count> get_files();
+            static filesystem_api &instance();
+            void request_files(bn::optional<file_type> file_filter);
+            void update();
+            bool response_available() const;
+            const bn::vector<file_entry, max_file_count> &get_files_response() const;
         };
     }
 }
 
-#endif // FILESYSTEM_H
+#endif // FILESYSTEM_API_H

@@ -23,8 +23,10 @@ namespace openflash
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
         bn::sprite_ptr *_cursor_sprite_ptr;
         bn::optional<bn::fixed> _old_cursor_pos;
-        pop_up *_instance;
         bool _confirmation_response;
+        bool _cancellable;
+        bool _acceptable;
+        bool _open;
 
     public:
         pop_up(const bn::string_view &title,
@@ -35,7 +37,8 @@ namespace openflash
         virtual void render();
         virtual void update();
         virtual void dismiss();
-        bool get_confirmation_response();
+        bool get_confirmation_response() const;
+        bool is_open() const;
     };
 }
 

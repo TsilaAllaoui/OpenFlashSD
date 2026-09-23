@@ -47,8 +47,18 @@ namespace openflash
                 _current_scene->set_title("Dump Cartridge");
             else if (origin_scene_type == scene_type::FLASH_SCREEN)
                 _current_scene->set_title("Flashing Cartridge");
+            else if (origin_scene_type == scene_type::SAVE_PROCESS_SELECTION_SCREEN)
+                _current_scene->set_title("Backup Save");
+            else if (origin_scene_type == scene_type::SAVE_PROCESS_SCREEN)
+                _current_scene->set_title("Restore Save");
         }
+        else if (type == scene_type::SAVE_PROCESS_SCREEN)
+            _current_scene = &_process_save_info_scene;
+        else if (type == scene_type::SAVE_PROCESS_SELECTION_SCREEN)
+            _current_scene = &_save_process_selection_scene;
         // Add more scenes here, not exception handling for now
+
+        _requested_scene.reset();
 
         _current_scene->enter();
     }
@@ -66,8 +76,6 @@ namespace openflash
         if (_requested_scene)
         {
             scene_type next_scene = *_requested_scene;
-            _requested_scene.reset();
-
             set_current_scene_state(next_scene);
         }
     }
@@ -75,5 +83,10 @@ namespace openflash
     void scene_state_machine::request_scene_state(scene_type type)
     {
         _requested_scene = type;
+    }
+
+    scene_type scene_state_machine::get_last_request_scene()
+    {
+        return _requested_scene.value();
     }
 }

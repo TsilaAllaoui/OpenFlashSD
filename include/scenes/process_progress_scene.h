@@ -5,12 +5,13 @@
 #include "bn_sprite_ptr.h"
 #include "bn_regular_bg_ptr.h"
 #include "bn_sprite_text_generator.h"
+#include "bn_regular_bg_map_ptr.h"
 
 #include "cart_infos.h"
 #include "process_infos.h"
+#include "utilities/pop_up.h"
 #include "scenes/i_scene.h"
 #include "scenes/scene_type.h"
-#include "bn_regular_bg_map_ptr.h"
 
 constexpr int process_progress_scene_max_text_sprite_count = 100;
 constexpr int process_progress_scene_text_y_spacing = 14;
@@ -26,7 +27,7 @@ namespace openflash
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
         bn::optional<bn::regular_bg_map_ptr> _bg_map;
-        bn::optional<bn::regular_bg_ptr> _pop_up_bg;
+        bn::optional<pop_up> _pop_up;
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, process_progress_scene_max_text_sprite_count> _text_sprites;
 
@@ -40,6 +41,8 @@ namespace openflash
 
         int _progress_index;
         int old_progress_index;
+
+        void set_content_priority(int priority);
 
     public:
         process_progress_scene();

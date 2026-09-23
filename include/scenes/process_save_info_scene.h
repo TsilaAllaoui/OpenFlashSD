@@ -1,5 +1,5 @@
-#ifndef DUMP_ROM_INFO_SCENE_H
-#define DUMP_ROM_INFO_SCENE_H
+#ifndef PROCESS_SAVE_INFO_SCENE_H
+#define PROCESS_SAVE_INFO_SCENE_H
 
 #include "bn_display.h"
 #include "bn_sprite_ptr.h"
@@ -11,14 +11,14 @@
 #include "scenes/i_scene.h"
 #include "scenes/scene_type.h"
 
-constexpr int dump_scene_max_text_sprite_count = 100;
-constexpr int dump_scene_text_y_spacing = 14;
-constexpr int dump_scene_text_y_top = -bn::display::height() / 2 + 30;
-constexpr int dump_x_alignment = -bn::display::width() / 2 + 20;
+constexpr int process_save_scene_max_text_sprite_count = 100;
+constexpr int process_save_scene_text_y_spacing = 14;
+constexpr int process_save_scene_text_y_top = -bn::display::height() / 2 + 30;
+constexpr int process_save_x_alignment = -bn::display::width() / 2 + 20;
 
 namespace openflash
 {
-    class dump_rom_info_scene : public i_scene
+    class process_save_info_scene : public i_scene
     {
     private:
         bn::string_view _title;
@@ -27,7 +27,7 @@ namespace openflash
         bn::optional<pop_up> _pop_up;
         bn::sprite_text_generator _text_generator_8x16;
         bn::sprite_text_generator _text_generator_8x8;
-        bn::vector<bn::sprite_ptr, dump_scene_max_text_sprite_count> _text_sprites;
+        bn::vector<bn::sprite_ptr, process_save_scene_max_text_sprite_count> _text_sprites;
 
         int gbacart_index = 0;
         int arrow_index = 1;
@@ -40,8 +40,8 @@ namespace openflash
         void set_content_priority(int priority);
 
     public:
-        dump_rom_info_scene();
-        virtual ~dump_rom_info_scene() = default;
+        process_save_info_scene();
+        virtual ~process_save_info_scene() = default;
         virtual void enter();
         virtual void exit();
         virtual void update();
@@ -51,4 +51,4 @@ namespace openflash
     };
 }
 
-#endif // DUMP_ROM_INFO_SCENE_H
+#endif // PROCESS_SAVE_INFO_SCENE_H

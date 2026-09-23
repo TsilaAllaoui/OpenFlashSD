@@ -5,8 +5,6 @@
 
 #include "rom_infos.h"
 #include "filesystem_api.h"
-#include "utilities/async.h"
-#include "utilities/pop_up.h"
 
 namespace openflash
 {
@@ -185,7 +183,7 @@ namespace openflash
         bn::array<uint8_t, gba_header_size> get_gba_header(
             bn::string_view filename_or_path);
         rom_infos get_gba_file_info(uint8_t *rom_bytes);
-        bn::vector<file_entry, max_file_count> mock_file_entries();
+        const bn::vector<file_entry, max_file_count> &mock_file_entries();
     }
 }
 

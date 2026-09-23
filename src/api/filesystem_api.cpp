@@ -1,31 +1,70 @@
-#include "bn_core.h"
-#include "filesystem_api.h"
-#include "utilities/async.h"
-#include "utilities/pop_up.h"
 #include "mock/mocks.h"
+#include "api/filesystem_api.h"
 
 namespace openflash
 {
     namespace api
     {
-        filesystem_api &api::filesystem_api::instance()
+        filesystem_api::filesystem_api()
+            : _files(),
+              _file_filter(),
+              _loading(false),
+              _response_ready(false),
+              _mock_frames(0)
+        {
+        }
+
+        filesystem_api &filesystem_api::instance()
         {
             static filesystem_api api;
             return api;
         }
 
-        bn::vector<file_entry, max_file_count> api::filesystem_api::get_files()
+        void filesystem_api::request_files(bn::optional<file_type> file_filter)
         {
-            auto popup = pop_up("Loading files...", false);
-
-            // simulating wait time
-            async::delay(60);
-
-            // get files from server side (esp32)
-            auto files = mock::mock_file_entries();
+            _file_filter = file_filter;
             _files.clear();
+            _loading = true;
+            _response_ready = false;
+            _mock_frames = 30;
+        }
+
+        void filesystem_api::update()
+        {
+            if (!_loading)
+                return;
+
+            if (_mock_frames > 0)
+            {
+                _mock_frames--;
+                return;
+            }
+
+            const auto &files = mock::mock_file_entries();
+
             for (const auto &file : files)
+            {
+                if (_file_filter.has_value() &&
+                    file.type != *_file_filter &&
+                    file.type != file_type::FOLDER)
+                {
+                    continue;
+                }
+
                 _files.emplace_back(file);
+            }
+
+            _loading = false;
+            _response_ready = true;
+        }
+
+        bool filesystem_api::response_available() const
+        {
+            return _response_ready;
+        }
+
+        const bn::vector<file_entry, max_file_count> &filesystem_api::get_files_response() const
+        {
             return _files;
         }
     }

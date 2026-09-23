@@ -23,7 +23,8 @@ namespace openflash
     {
         NORMAL_FILE,
         FOLDER,
-        GBA_FILE
+        GBA_FILE,
+        SAVE_FILE
     };
 
     class file_entry
@@ -51,6 +52,7 @@ namespace openflash
         bool is_folder() const;
         bool is_file() const;
         bool is_gba_file() const;
+        bool is_save_file() const;
         rom_infos get_gba_file_info(uint8_t *rom_bytes);
     };
 }

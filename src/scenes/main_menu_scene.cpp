@@ -77,7 +77,7 @@ namespace openflash
         _selector.update();
         if (bn::keypad::right_pressed())
         {
-            if (_current_menu_index < 3)
+            if (_current_menu_index < 2)
                 _current_menu_index++;
             _selector.update_position(_current_menu_index);
         }
@@ -91,11 +91,16 @@ namespace openflash
         {
             if (_current_menu_index == 0)
             {
+                flash_context::instance().set_current_file_filter(file_type::GBA_FILE);
                 scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
             }
             else if (_current_menu_index == 1)
             {
                 scene_state_machine::instance().request_scene_state(scene_type::DUMP_ROM_INFO);
+            }
+            else if (_current_menu_index == 2)
+            {
+                scene_state_machine::instance().request_scene_state(scene_type::SAVE_PROCESS_SELECTION_SCREEN);
             }
         }
         if (bn::keypad::select_pressed())

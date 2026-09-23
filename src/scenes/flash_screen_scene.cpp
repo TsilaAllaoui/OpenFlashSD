@@ -13,6 +13,7 @@
 #include "flash_screen_bg.h"
 #include "utilities/pop_up.h"
 #include "scene_state_machine.h"
+#include "api/process_info_api.h"
 #include "utilities/text_helpers.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
@@ -24,7 +25,7 @@ namespace openflash
     flash_screen_scene::flash_screen_scene()
         : _type(scene_type::FLASH_SCREEN),
           _background(),
-          _pop_up_bg(),
+          _pop_up(),
           _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
           _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
           _gbacart_sprite(bn::sprite_items::gbacart.create_sprite(screen_left + 12, screen_top + 12))
@@ -113,6 +114,7 @@ namespace openflash
 
     void flash_screen_scene::exit()
     {
+        _pop_up.reset();
         _gbacart_sprite.set_visible(false);
         _text_sprites.clear();
         _background.reset();
@@ -120,48 +122,58 @@ namespace openflash
 
     void flash_screen_scene::update()
     {
-        bn::core::update();
-        if (bn::keypad::a_pressed())
+        if (_pop_up)
         {
-            for (auto &sprite : _text_sprites)
-                sprite.set_bg_priority(1);
+            _pop_up->update();
 
-            _gbacart_sprite.set_bg_priority(1);
-            _background->set_priority(1);
-
-            pop_up popup("Flash Rom?", true, true);
-            popup.update();
-            if (popup.get_confirmation_response())
-            {
-                scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
+            if (_pop_up->is_open())
                 return;
+
+            bool confirmed = _pop_up->get_confirmation_response();
+            _pop_up.reset();
+            set_content_priority(0);
+
+            if (confirmed)
+            {
+                api::process_info_api::instance().start(process_type::FLASHING);
+                scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
             }
 
-            for (auto &sprite : _text_sprites)
-                sprite.set_bg_priority(0);
-            _gbacart_sprite.set_bg_priority(0);
-            _background->set_priority(0);
+            return;
         }
-        else if (bn::keypad::b_pressed())
+
+        if (bn::keypad::a_pressed())
+        {
+            set_content_priority(1);
+            _pop_up.emplace("Flash Rom?", true, true);
+            _pop_up->render();
+            return;
+        }
+
+        if (bn::keypad::b_pressed())
         {
             scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
+            return;
         }
-        else if (bn::keypad::select_pressed())
-        {
-            for (auto &sprite : _text_sprites)
-                sprite.set_bg_priority(1);
-            _gbacart_sprite.set_bg_priority(1);
-            _background->set_priority(1);
 
+        if (bn::keypad::select_pressed())
+        {
             auto cart_infos = api::cart_api::instance().get_current_cart_infos();
+
             if (cart_infos.has_value())
                 flash_context::instance().set_current_cart_infos(cart_infos.value());
-
-            for (auto &sprite : _text_sprites)
-                sprite.set_bg_priority(0);
-            _gbacart_sprite.set_bg_priority(0);
-            _background->set_priority(0);
         }
+    }
+
+    void flash_screen_scene::set_content_priority(int priority)
+    {
+        if (_background)
+            _background->set_priority(priority);
+
+        _gbacart_sprite.set_bg_priority(priority);
+
+        for (auto &sprite : _text_sprites)
+            sprite.set_bg_priority(priority);
     }
 
     void flash_screen_scene::render()
