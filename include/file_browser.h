@@ -2,9 +2,11 @@
 #define FILE_BROWSER_H
 
 #include "bn_string.h"
-#include "file_entry.h"
 #include "bn_sprite_ptr.h"
 #include "bn_sprite_text_generator.h"
+
+#include "file_entry.h"
+#include "scene_type.h"
 #include "utilities/pop_up.h"
 
 constexpr int max_character_count = 64;
@@ -29,17 +31,14 @@ namespace openflash
     {
         file_browser_state state;
 
-        bn::vector<
-            navigation_entry,
-            max_navigation_depth>
-            history;
+        bn::vector<navigation_entry, max_navigation_depth> history;
 
         bn::optional<file_type> file_filter;
     };
 
     class file_browser
     {
-    private:
+      private:
         bn::vector<file_entry, max_file_count> _files;
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, max_file_count> _text_sprites;
@@ -51,10 +50,12 @@ namespace openflash
         bn::vector<navigation_entry, max_navigation_depth> _history;
         bool _restore_history;
         bn::optional<file_type> _file_filter;
+        bool _pending_cart_infos_request;
+        scene_type _requested_scene_type;
 
         void update_cursor_position();
 
-    public:
+      public:
         file_browser(bn::optional<file_type> file_filter);
         ~file_browser() = default;
 
@@ -68,6 +69,6 @@ namespace openflash
         bool restore_snapshot(const file_browser_snapshot &snapshot);
         bool restore_browser_state();
     };
-}
+} // namespace openflash
 
 #endif // FILE_BROWSER_H

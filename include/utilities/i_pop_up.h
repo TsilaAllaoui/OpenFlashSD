@@ -5,12 +5,12 @@ namespace openflash
 {
     class i_pop_up
     {
-    public:
+      public:
         virtual ~i_pop_up() = default;
         virtual void render() = 0;
         virtual void update() = 0;
         virtual void dismiss() = 0;
     };
-}
+} // namespace openflash
 
 #endif // I_POP_UP_H

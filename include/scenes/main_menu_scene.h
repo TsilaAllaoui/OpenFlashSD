@@ -5,16 +5,16 @@
 #include "bn_regular_bg_ptr.h"
 #include "bn_sprite_text_generator.h"
 
-#include "scenes/scene_type.h"
 #include "scenes/i_scene.h"
+#include "utilities/pop_up.h"
+#include "scenes/scene_type.h"
 #include "utilities/selector.h"
-
 
 namespace openflash
 {
     class main_menu_bg_scene : public i_scene
     {
-    private:
+      private:
         bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
@@ -23,7 +23,10 @@ namespace openflash
         bn::sprite_text_generator _text_generator_8x8;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
         int _current_menu_index;
-    public:
+        bool _pending_cart_infos_request;
+        bn::optional<pop_up> _popup;
+
+      public:
         main_menu_bg_scene();
         virtual ~main_menu_bg_scene() = default;
         virtual void enter();
@@ -31,8 +34,8 @@ namespace openflash
         virtual void update();
         virtual void render();
         virtual scene_type get_scene_type();
-        virtual void set_title(const bn::string_view& title);
+        virtual void set_title(const bn::string_view &title);
     };
-}
+} // namespace openflash
 
 #endif // MAIN_MENU_SCENE_H

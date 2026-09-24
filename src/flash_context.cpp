@@ -51,4 +51,4 @@ namespace openflash
     {
         return _current_save_infos;
     }
-}
+} // namespace openflash

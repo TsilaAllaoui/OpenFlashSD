@@ -2,21 +2,14 @@
 
 namespace openflash
 {
-    file_entry::file_entry(
-        bn::string_view name_,
-        bn::string_view path_,
-        file_type type_,
-        int id_,
-        int parentId_,
-        int depth_,
-        int size_)
-        : name(name_),
-          path(path_),
-          type(type_),
-          id(id_),
-          parentId(parentId_),
-          depth(depth_),
-          size(size_)
+    file_entry::file_entry(bn::string_view name_,
+                           bn::string_view path_,
+                           file_type type_,
+                           int id_,
+                           int parentId_,
+                           int depth_,
+                           int size_)
+        : name(name_), path(path_), type(type_), id(id_), parentId(parentId_), depth(depth_), size(size_)
     {
     }
 
@@ -39,4 +32,4 @@ namespace openflash
     {
         return type == file_type::SAVE_FILE;
     }
-}
+} // namespace openflash

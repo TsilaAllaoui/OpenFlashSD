@@ -13,6 +13,6 @@ namespace openflash
         bn::string<max_cart_character_name> name;
         rom_infos cart_rom_infos;
     };
-}
+} // namespace openflash
 
 #endif // CART_INFOS_H

@@ -12,10 +12,10 @@ fi
 # # 2. Build configuration logic
 # if [ -z "$2" ]; then
 #     # Simple make -j11 when no second arg is given
-#     make -j11
+    make -j11
 # else
     # Fallback/Debug build if a second arg is present
-    make -j11 OPENFLASH_DEBUG=1
+    # make -j11 OPENFLASH_DEBUG=1
 # fi
 
 # run emulator

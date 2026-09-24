@@ -1,4 +1,5 @@
 #include "bn_array.h"
+#include "bn_assert.h"
 #include "bn_display.h"
 #include "bn_bg_tiles.h"
 #include "bn_regular_bg_ptr.h"
@@ -14,7 +15,6 @@
 #include "bn_bg_palette_ptr.h"
 #include "api/process_info_api.h"
 #include "scene_state_machine.h"
-#include "bn_regular_bg_map_ptr.h"
 #include "process_progress_scene.h"
 #include "utilities/text_helpers.h"
 #include "process_progress_scene_bg.h"
@@ -23,79 +23,79 @@
 namespace openflash
 {
     process_progress_scene::process_progress_scene()
-        : _type(scene_type::PROCESS_PROGRESS),
-          _background(),
-          _bg_map(),
-          _pop_up(),
-          _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
-          _sprites(),
-          _current_cart_infos(),
-          _progress_index(3),
-          old_progress_index(_progress_index)
+        : _type(scene_type::PROCESS_PROGRESS), _process_type(process_type::DUMPING), _process_type_ready(false),
+          _background(), _bg_map(), _pop_up(),
+          _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)), _sprites(),
+          _current_cart_infos(), _progress_index(3), old_progress_index(_progress_index),
+          _pending_process_infos_request(request_status::IDLE), _pending_cart_infos_request(request_status::IDLE)
     {
         _sprites.emplace_back(bn::sprite_items::arrow.create_sprite(5, -10));
         _sprites.emplace_back(bn::sprite_items::info.create_sprite(-bn::display::width() / 2 + 30, 60));
 
         for (auto &sprite : _sprites)
             sprite.set_visible(false);
+
+        _text_generator.set_bg_priority(1);
     }
 
     void process_progress_scene::update_screen_infos()
     {
-        auto current_process_infos = api::process_info_api::instance().get_current_process_infos();
+        if (_pending_process_infos_request != request_status::PENDING)
+            return;
 
-        if (!current_process_infos.has_value())
+        auto &process_api = api::process_info_api::instance();
+
+        if (!process_api.response_available())
+            return;
+
+        _pending_process_infos_request = request_status::IDLE;
+
+        const auto &current_process_infos = process_api.get_process_infos_response();
+        const process_type type = current_process_infos.type;
+
+        if (current_process_infos.progress >= 100)
         {
-            scene_state_machine::instance().request_scene_state(scene_type::MAIN_MENU);
+            if (!_pop_up)
+            {
+                bn::string<18> popup_header;
+
+                if (type == process_type::DUMPING)
+                    popup_header = "Dump complete!";
+                else if (type == process_type::FLASHING)
+                    popup_header = "Flash complete!";
+                else if (type == process_type::BACKUP_SAVE)
+                    popup_header = "Backup complete!";
+                else
+                    popup_header = "Restore complete!";
+
+                set_content_priority(1);
+                _pop_up.emplace(popup_header, true, false);
+                _pop_up->render();
+            }
+
             return;
         }
 
-        if (current_process_infos->progress >= 100)
+        if (old_progress_index != current_process_infos.progress && current_process_infos.progress % 5 == 0
+            && current_process_infos.progress > 0)
         {
-            bn::string<32> popup_header;
-
-            if (current_process_infos->type == process_type::DUMPING)
-                popup_header = "Dump complete!";
-            else if (current_process_infos->type == process_type::FLASHING)
-                popup_header = "Flash complete!";
-            else if (current_process_infos->type == process_type::BACKUP_SAVE)
-                popup_header = "Backup complete!";
-            else
-                popup_header = "Restore complete!";
-
-            set_content_priority(1);
-            _pop_up.emplace(popup_header, true, false);
-            _pop_up->render();
-            return;
-        }
-
-        if (old_progress_index != current_process_infos->progress &&
-            current_process_infos->progress % 5 == 0 &&
-            current_process_infos->progress > 0)
-        {
-            old_progress_index = current_process_infos->progress;
+            old_progress_index = current_process_infos.progress;
             set_tile(_progress_index++, 13, 63);
         }
 
         _text_sprites.clear();
-
-        text_helpers::draw_centered(_text_generator,
-                                    _title,
-                                    screen_top + 12,
-                                    _text_sprites);
+        text_helpers::draw_centered(_text_generator, _title, screen_top + 12, _text_sprites);
 
         bn::string<max_character_count> header_text;
 
-        if (current_process_infos->type == process_type::DUMPING)
+        if (type == process_type::DUMPING)
         {
-            if (_current_cart_infos.has_value())
-            {
-                header_text = "Path: \"/dump/";
-                header_text += _current_cart_infos->cart_rom_infos.name;
-                header_text += ".gba\"";
-            }
+            BN_ASSERT(_current_cart_infos.has_value(), "Cart infos is nullopt");
+            header_text = "Path: \"/dump/";
+            header_text += _current_cart_infos->cart_rom_infos.name;
+            header_text += ".gba\"";
         }
-        else if (current_process_infos->type == process_type::FLASHING)
+        else if (type == process_type::FLASHING)
         {
             auto current_rom_infos = flash_context::instance().get_current_rom_infos();
 
@@ -106,16 +106,14 @@ namespace openflash
                 header_text += "\"";
             }
         }
-        else if (current_process_infos->type == process_type::BACKUP_SAVE)
+        else if (type == process_type::BACKUP_SAVE)
         {
-            if (_current_cart_infos.has_value())
-            {
-                header_text = "Path: \"/saves/";
-                header_text += _current_cart_infos->cart_rom_infos.name;
-                header_text += ".sav\"";
-            }
+            BN_ASSERT(_current_cart_infos.has_value(), "Cart infos is nullopt");
+            header_text = "Path: \"/saves/";
+            header_text += _current_cart_infos->cart_rom_infos.name;
+            header_text += ".sav\"";
         }
-        else
+        else if (type == process_type::RESTORE_SAVE)
         {
             auto current_save_infos = flash_context::instance().get_current_save_infos();
 
@@ -128,73 +126,61 @@ namespace openflash
         }
 
         if (!header_text.empty())
-        {
             text_helpers::draw_centered_at(_text_generator,
                                            text_helpers::truncate_text(header_text, 32),
                                            0,
                                            -48,
                                            _text_sprites);
-        }
 
+        text_helpers::draw_centered_at(_text_generator, "DO NOT POWER OFF CONSOLE", 10, 60, _text_sprites);
         text_helpers::draw_centered_at(_text_generator,
-                                       "DO NOT POWER OFF CONSOLE",
-                                       10,
-                                       60,
-                                       _text_sprites);
-
-        text_helpers::draw_centered_at(_text_generator,
-                                       bn::to_string<32>(current_process_infos->progress) + "%",
+                                       bn::to_string<32>(current_process_infos.progress) + "%",
                                        85,
                                        27,
                                        _text_sprites);
 
         bn::string<32> status_text = "Status: ";
 
-        if (current_process_infos->type == process_type::DUMPING)
+        if (type == process_type::DUMPING)
             status_text += "READING CART";
-        else if (current_process_infos->type == process_type::FLASHING)
+        else if (type == process_type::FLASHING)
             status_text += "WRITING CART";
-        else if (current_process_infos->type == process_type::BACKUP_SAVE)
+        else if (type == process_type::BACKUP_SAVE)
             status_text += "READING SAVE";
         else
             status_text += "WRITING SAVE";
 
-        text_helpers::draw_centered_at(_text_generator,
-                                       status_text,
-                                       0,
-                                       15,
-                                       _text_sprites);
+        text_helpers::draw_centered_at(_text_generator, status_text, 0, 15, _text_sprites);
 
+        bn::string<32> elapsed_text = "Elapsed: ";
+        elapsed_text += bn::to_string<32>(current_process_infos.elapsed_time.minutes);
+        elapsed_text += ":";
+
+        if (current_process_infos.elapsed_time.seconds < 10)
+            elapsed_text += "0";
+
+        elapsed_text += bn::to_string<32>(current_process_infos.elapsed_time.seconds);
         text_helpers::draw_centered_at(_text_generator,
-                                       bn::string<32>("Elapsed: ") +
-                                           bn::to_string<32>(current_process_infos->elapsed_time.minutes) +
-                                           ":" +
-                                           bn::to_string<32>(current_process_infos->elapsed_time.seconds),
+                                       elapsed_text,
                                        -bn::display::width() / 2 + 50,
                                        40,
                                        _text_sprites);
 
-        text_helpers::draw_centered_at(_text_generator,
-                                       bn::string<32>("Speed: ") +
-                                           bn::to_string<32>(current_process_infos->speed) +
-                                           "KiB/s",
-                                       60,
-                                       40,
-                                       _text_sprites);
+        bn::string<32> speed_text = "Speed: ";
+        speed_text += bn::to_string<32>(current_process_infos.speed);
+        speed_text += "KiB/s";
+        text_helpers::draw_centered_at(_text_generator, speed_text, 60, 40, _text_sprites);
+
+        set_content_priority(1);
 
         for (auto &sprite : _sprites)
-        {
             sprite.set_visible(true);
-            sprite.set_bg_priority(0);
-        }
 
-        for (auto &sprite : _text_sprites)
-            sprite.set_bg_priority(0);
+        process_api.request_process_infos();
+        _pending_process_infos_request = request_status::PENDING;
     }
 
-    void process_progress_scene::set_tile(int x,
-                                          int y,
-                                          int tile_index)
+    void process_progress_scene::set_tile(int x, int y, int tile_index)
     {
         if (!_bg_map)
             return;
@@ -206,7 +192,6 @@ namespace openflash
 
         const int width = _bg_map->dimensions().width();
         const int index = y * width + x;
-
         bn::regular_bg_map_cell_info cell(vram.value()[index]);
         cell.set_tile_index(tile_index + _bg_map->tiles_offset());
         vram.value()[index] = cell.cell();
@@ -214,27 +199,30 @@ namespace openflash
 
     void process_progress_scene::enter()
     {
+        BN_ASSERT(_process_type_ready, "Process type was not set before entering PROCESS_PROGRESS");
+
+        _pop_up.reset();
+        _current_cart_infos = flash_context::instance().get_current_cart_infos();
+        _progress_index = 3;
+        old_progress_index = _progress_index;
+        _pending_cart_infos_request = request_status::IDLE;
+        _pending_process_infos_request = request_status::IDLE;
+
         bn::bg_tiles::set_allow_offset(false);
 
         constexpr int map_width = 32;
         constexpr int map_height = 32;
         constexpr int map_cell_count = map_width * map_height;
-
         alignas(4) bn::array<bn::regular_bg_map_cell, map_cell_count> decompressed_cells;
-
-        [[maybe_unused]]
-        auto result = process_progress_scene_bg_map_item.decompress(decompressed_cells);
-
+        [[maybe_unused]] auto result = process_progress_scene_bg_map_item.decompress(decompressed_cells);
         auto tiles = bn::regular_bg_tiles_items::tiles.create_tiles();
         auto palette = bn::regular_bg_tiles_items::tiles_palette.create_palette();
-
-        _bg_map.emplace(bn::regular_bg_map_ptr::allocate(bn::size(map_width,
-                                                                  map_height),
+        _bg_map.emplace(bn::regular_bg_map_ptr::allocate(bn::size(map_width, map_height),
                                                          bn::move(tiles),
                                                          bn::move(palette)));
 
         auto vram = _bg_map->vram();
-        BN_ASSERT(vram.has_value());
+        BN_ASSERT(vram.has_value(), "BG map VRAM is nullopt");
 
         const int tiles_offset = _bg_map->tiles_offset();
         const int palette_offset = _bg_map->palette_banks_offset();
@@ -242,25 +230,30 @@ namespace openflash
         for (int index = 0; index < map_cell_count; ++index)
         {
             bn::regular_bg_map_cell_info cell(decompressed_cells[index]);
-
             cell.set_tile_index(cell.tile_index() + tiles_offset);
             cell.set_palette_id(cell.palette_id() + palette_offset);
-
             vram.value()[index] = cell.cell();
         }
 
-        _background.emplace(bn::regular_bg_ptr::create(0,
-                                                       0,
-                                                       _bg_map.value()));
-
+        _background.emplace(bn::regular_bg_ptr::create(0, 0, _bg_map.value()));
         _background->set_top_left_position(0, 0);
-        _background->set_priority(0);
-
+        _background->set_priority(1);
         bn::bg_tiles::set_allow_offset(true);
+        set_content_priority(1);
 
-        _current_cart_infos = api::cart_api::instance().get_current_cart_infos();
+        if ((_process_type == process_type::DUMPING || _process_type == process_type::BACKUP_SAVE)
+            && !_current_cart_infos.has_value())
+        {
+            _pending_cart_infos_request = request_status::PENDING;
+            api::cart_api::instance().request_cart_infos();
+            _pop_up.emplace("Getting cart infos...", false);
+            _pop_up->render();
+        }
 
-        update_screen_infos();
+        auto &process_api = api::process_info_api::instance();
+        process_api.start_process(_process_type);
+        process_api.request_process_infos();
+        _pending_process_infos_request = request_status::PENDING;
     }
 
     void process_progress_scene::exit()
@@ -273,13 +266,32 @@ namespace openflash
         _text_sprites.clear();
         _background.reset();
         _bg_map.reset();
+        _current_cart_infos.reset();
         _progress_index = 3;
         old_progress_index = _progress_index;
-        api::process_info_api::instance().reset();
+        _pending_cart_infos_request = request_status::IDLE;
+        _pending_process_infos_request = request_status::IDLE;
+        _process_type_ready = false;
+        api::process_info_api::instance().request_process_infos_reset();
     }
 
     void process_progress_scene::update()
     {
+        if (_pending_cart_infos_request == request_status::PENDING)
+        {
+            auto &cart_api = api::cart_api::instance();
+            cart_api.update();
+
+            if (!cart_api.response_available())
+                return;
+
+            _current_cart_infos.emplace(cart_api.get_cart_infos_response());
+            flash_context::instance().set_current_cart_infos(*_current_cart_infos);
+            _pending_cart_infos_request = request_status::IDLE;
+            _pop_up.reset();
+            set_content_priority(1);
+        }
+
         if (_pop_up)
         {
             _pop_up->update();
@@ -292,6 +304,7 @@ namespace openflash
             return;
         }
 
+        api::process_info_api::instance().update();
         update_screen_infos();
     }
 
@@ -299,6 +312,8 @@ namespace openflash
     {
         if (_background)
             _background->set_priority(priority);
+
+        _text_generator.set_bg_priority(priority);
 
         for (auto &sprite : _text_sprites)
             sprite.set_bg_priority(priority);
@@ -320,4 +335,19 @@ namespace openflash
     {
         _title = title;
     }
-}
+
+    void process_progress_scene::set_process_type(process_type type)
+    {
+        _process_type = type;
+        _process_type_ready = true;
+
+        if (type == process_type::DUMPING)
+            _title = "Dump Cartridge";
+        else if (type == process_type::FLASHING)
+            _title = "Flashing Cartridge";
+        else if (type == process_type::BACKUP_SAVE)
+            _title = "Backup Save";
+        else
+            _title = "Restore Save";
+    }
+} // namespace openflash

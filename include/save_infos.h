@@ -29,6 +29,6 @@ namespace openflash
         save_type type;
         process_status status;
     };
-}
+} // namespace openflash
 
 #endif // SAVE_INFO_H

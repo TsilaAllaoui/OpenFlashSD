@@ -1,0 +1,100 @@
+BasedOnStyle: LLVM
+
+# -------------------------
+# General
+# -------------------------
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+ColumnLimit: 120
+
+# -------------------------
+# Braces
+# -------------------------
+
+BreakBeforeBraces: Allman
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# -------------------------
+# Function calls / parameters
+# -------------------------
+
+BinPackArguments: false
+BinPackParameters: false
+
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+AlignAfterOpenBracket: Align
+ContinuationIndentWidth: 4
+
+PenaltyBreakBeforeFirstCallParameter: 100
+PenaltyBreakOpenParenthesis: 100
+
+# -------------------------
+# Assignments
+# -------------------------
+
+AlignConsecutiveAssignments: false
+BreakBeforeBinaryOperators: NonAssignment
+
+PenaltyBreakAssignment: 1000
+
+AlignOperands: Align
+
+# -------------------------
+# Expressions
+# -------------------------
+
+BreakBeforeTernaryOperators: true
+
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# -------------------------
+# Pointers / references
+# -------------------------
+
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+
+# -------------------------
+# Empty lines
+# -------------------------
+
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# -------------------------
+# Includes
+# -------------------------
+
+SortIncludes: Never
+IncludeBlocks: Preserve
+
+# -------------------------
+# Switch / case
+# -------------------------
+
+IndentCaseLabels: true
+IndentCaseBlocks: false
+
+# -------------------------
+# Comments
+# -------------------------
+
+ReflowComments: false
+
+# -------------------------
+# Namespace
+# -------------------------
+
+NamespaceIndentation: All
+CompactNamespaces: false

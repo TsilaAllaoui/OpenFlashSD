@@ -8,10 +8,10 @@
 #include "bn_sprite_items_gbacart.h"
 
 #include "file_entry.h"
+#include "api/cart_api.h"
 #include "flash_context.h"
 #include "color_helpers.h"
 #include "big_selector_bg.h"
-#include "api/process_info_api.h"
 #include "scene_state_machine.h"
 #include "utilities/text_helpers.h"
 #include "save_process_selection_scene.h"
@@ -23,14 +23,10 @@
 namespace openflash
 {
     save_process_selection_scene::save_process_selection_scene()
-        : _type(scene_type::SAVE_PROCESS_SELECTION_SCREEN),
-          _background(),
-          _big_selector_bg(),
-          _pop_up(),
+        : _type(scene_type::SAVE_PROCESS_SELECTION_SCREEN), _background(), _big_selector_bg(), _pop_up(),
           _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
-          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
-          _sprites(),
-          _current_selector_index(0)
+          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)), _sprites(),
+          _current_selector_index(0), _pending_cart_infos_request(false)
     {
         _sprites.emplace_back(bn::sprite_items::save.create_sprite(screen_left + 12, screen_top + 12));
         _sprites.emplace_back(bn::sprite_items::gbacart.create_sprite(screen_left + 40, screen_top + 60));
@@ -49,16 +45,12 @@ namespace openflash
 
     void save_process_selection_scene::enter()
     {
-        text_helpers::draw_centered(_text_generator_8x16,
-                                    "Save process",
-                                    screen_top + 12,
-                                    _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x16, "Save process", screen_top + 12, _text_sprites);
 
         bn::bg_tiles::set_allow_offset(false);
-        _background.emplace(bn::regular_bg_item(
-                                bn::regular_bg_tiles_items::tiles,
-                                bn::regular_bg_tiles_items::tiles_palette,
-                                openflash::save_process_selection_scene_bg_map_item)
+        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
+                                                bn::regular_bg_tiles_items::tiles_palette,
+                                                openflash::save_process_selection_scene_bg_map_item)
                                 .create_bg(0, 0));
         _background->set_top_left_position(0, 0);
         bn::regular_bg_map_ptr bg_map_ptr = _background->map();
@@ -67,10 +59,9 @@ namespace openflash
         bn::bg_tiles::set_allow_offset(true);
 
         bn::bg_tiles::set_allow_offset(false);
-        _big_selector_bg.emplace(bn::regular_bg_item(
-                                     bn::regular_bg_tiles_items::tiles,
-                                     bn::regular_bg_tiles_items::tiles_palette,
-                                     openflash::big_selector_bg_map_item)
+        _big_selector_bg.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
+                                                     bn::regular_bg_tiles_items::tiles_palette,
+                                                     openflash::big_selector_bg_map_item)
                                      .create_bg(0, 0));
         _big_selector_bg->set_top_left_position(0, 0);
         bn::regular_bg_map_ptr selector_bg_map_ptr = _big_selector_bg->map();
@@ -78,22 +69,11 @@ namespace openflash
         _big_selector_bg->set_priority(0);
         bn::bg_tiles::set_allow_offset(true);
 
-        text_helpers::draw_centered_at(_text_generator_8x8,
-                                       "Backup save to SD Card",
-                                       25,
-                                       -20,
-                                       _text_sprites);
+        text_helpers::draw_centered_at(_text_generator_8x8, "Backup save to SD Card", 25, -20, _text_sprites);
 
-        text_helpers::draw_centered_at(_text_generator_8x8,
-                                       "Restore from SD Card",
-                                       25,
-                                       30,
-                                       _text_sprites);
+        text_helpers::draw_centered_at(_text_generator_8x8, "Restore from SD Card", 25, 30, _text_sprites);
 
-        text_helpers::draw_centered(_text_generator_8x8,
-                                    "A: Choose  B: Back  SELECT: Refresh Cart",
-                                    65,
-                                    _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x8, "A: Choose  B: Back  SELECT: Refresh Cart", 65, _text_sprites);
 
         for (auto &sprite : _sprites)
         {
@@ -108,6 +88,7 @@ namespace openflash
     void save_process_selection_scene::exit()
     {
         _pop_up.reset();
+        _pending_cart_infos_request = false;
 
         for (auto &sprite : _sprites)
             sprite.set_visible(false);
@@ -119,29 +100,51 @@ namespace openflash
 
     void save_process_selection_scene::update()
     {
+        if (_pending_cart_infos_request)
+        {
+            auto &cart_api = api::cart_api::instance();
+            cart_api.update();
+
+            if (!cart_api.response_available())
+                return;
+
+            const auto &cart_infos = cart_api.get_cart_infos_response();
+            flash_context::instance().set_current_cart_infos(cart_infos);
+            _current_cart_infos = cart_infos;
+            _pending_cart_infos_request = false;
+            _pop_up.reset();
+            _big_selector_bg->set_priority(0);
+            return;
+        }
+
         if (_pop_up)
         {
             _pop_up->update();
 
-            if (_pop_up->is_open())
-                return;
+            auto confirmation_status = _pop_up->get_confirmation_response();
 
-            bool confirmed = _pop_up->get_confirmation_response();
-            _pop_up.reset();
-            _big_selector_bg->set_priority(0);
-
-            if (!confirmed)
-                return;
-
-            if (_current_selector_index == 1)
+            if (confirmation_status == confirmation_request_status::NEGATIVE)
             {
-                flash_context::instance().set_current_file_filter(file_type::SAVE_FILE);
-                scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
+                _pop_up.reset();
+                _big_selector_bg->set_priority(0);
+                return;
             }
-            else
+
+            else if (confirmation_status == confirmation_request_status::POSITIVE)
             {
-                api::process_info_api::instance().start(process_type::BACKUP_SAVE);
-                scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
+                if (_current_selector_index == 1)
+                {
+                    flash_context::instance().set_current_file_filter(file_type::SAVE_FILE);
+                    scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
+                    _pop_up.reset();
+                    return;
+                }
+                else
+                {
+                    scene_state_machine::instance().request_process_progress(process_type::BACKUP_SAVE);
+                    _pop_up.reset();
+                    return;
+                }
             }
 
             return;
@@ -150,6 +153,16 @@ namespace openflash
         if (bn::keypad::b_pressed())
         {
             scene_state_machine::instance().request_scene_state(scene_type::MAIN_MENU);
+            return;
+        }
+
+        if (bn::keypad::select_pressed())
+        {
+            _pending_cart_infos_request = true;
+            api::cart_api::instance().request_cart_infos();
+            _big_selector_bg->set_priority(1);
+            _pop_up.emplace("Getting cart infos...", false);
+            _pop_up->render();
             return;
         }
 
@@ -211,4 +224,4 @@ namespace openflash
     {
         _title = title;
     }
-}
+} // namespace openflash

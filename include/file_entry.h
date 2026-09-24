@@ -29,15 +29,14 @@ namespace openflash
 
     class file_entry
     {
-    public:
-        file_entry(
-            bn::string_view name_,
-            bn::string_view path_,
-            file_type type_,
-            int id_,
-            int parentId_ = -1,
-            int depth_ = 0,
-            int size_ = 0);
+      public:
+        file_entry(bn::string_view name_,
+                   bn::string_view path_,
+                   file_type type_,
+                   int id_,
+                   int parentId_ = -1,
+                   int depth_ = 0,
+                   int size_ = 0);
 
         ~file_entry() = default;
 
@@ -55,6 +54,6 @@ namespace openflash
         bool is_save_file() const;
         rom_infos get_gba_file_info(uint8_t *rom_bytes);
     };
-}
+} // namespace openflash
 
 #endif // FILE_ENTRY_H

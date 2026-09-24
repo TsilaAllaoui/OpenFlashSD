@@ -23,36 +23,20 @@
 namespace openflash
 {
     flash_screen_scene::flash_screen_scene()
-        : _type(scene_type::FLASH_SCREEN),
-          _background(),
-          _pop_up(),
+        : _type(scene_type::FLASH_SCREEN), _background(), _pop_up(),
           _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
           _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
-          _gbacart_sprite(bn::sprite_items::gbacart.create_sprite(screen_left + 12, screen_top + 12))
+          _gbacart_sprite(bn::sprite_items::gbacart.create_sprite(screen_left + 12, screen_top + 12)),
+          _request_status(request_status::IDLE), _popup()
     {
         _gbacart_sprite.set_visible(false);
+
+        set_content_priority(1);
     }
 
-    void flash_screen_scene::enter()
+    void flash_screen_scene::render_cart_infos()
     {
-        _gbacart_sprite.set_visible(true);
-        _gbacart_sprite.set_bg_priority(0);
-
-        // header
-        text_helpers::draw_centered(_text_generator_8x16, "ROM Information", screen_top + 12, _text_sprites);
-
-        // Background
-        bn::bg_tiles::set_allow_offset(false);
-        _background.emplace(bn::regular_bg_item(
-                                bn::regular_bg_tiles_items::tiles,
-                                bn::regular_bg_tiles_items::tiles_palette,
-                                openflash::flash_screen_bg_map_item)
-                                .create_bg(0, 0));
-        _background.value().set_top_left_position(0, 0);
-        bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
-        bg_map_ptr.reload_cells_ref();
-        _background->set_priority(0);
-        bn::bg_tiles::set_allow_offset(true);
+        _text_sprites.clear();
 
         auto rom_infos = flash_context::instance().get_current_rom_infos();
 
@@ -97,24 +81,44 @@ namespace openflash
 
         auto cart_infos = flash_context::instance().get_current_cart_infos();
 
-        if (cart_infos.has_value())
-        {
-            bn::string<max_character_count> cart_infos_text = "Cart: ";
-            cart_infos_text += cart_infos->name;
-            text_helpers::draw_centered(_text_generator_8x16, cart_infos_text, 30, _text_sprites);
-        }
+        if (!cart_infos)
+            BN_ERROR("Cart infos is nullopt");
 
-        text_helpers::draw_centered(_text_generator_8x8,
-                                    "A: Flash  B: Back  SELECT: Refresh Cart",
-                                    65, _text_sprites);
+        bn::string<max_character_count> cart_infos_text = "Cart: ";
+        cart_infos_text += cart_infos->name;
+        text_helpers::draw_centered(_text_generator_8x16, cart_infos_text, 30, _text_sprites);
 
-        for (auto &sprite : _text_sprites)
-            sprite.set_bg_priority(0);
+        text_helpers::draw_centered(_text_generator_8x8, "A: Flash  B: Back  SELECT: Refresh Cart", 65, _text_sprites);
+
+        set_content_priority(1);
+    }
+
+    void flash_screen_scene::enter()
+    {
+        _gbacart_sprite.set_visible(true);
+        _gbacart_sprite.set_bg_priority(1);
+
+        // header
+        text_helpers::draw_centered(_text_generator_8x16, "ROM Information", screen_top + 12, _text_sprites);
+
+        // Background
+        bn::bg_tiles::set_allow_offset(false);
+        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
+                                                bn::regular_bg_tiles_items::tiles_palette,
+                                                openflash::flash_screen_bg_map_item)
+                                .create_bg(0, 0));
+        _background.value().set_top_left_position(0, 0);
+        bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
+        bg_map_ptr.reload_cells_ref();
+        bn::bg_tiles::set_allow_offset(true);
+
+        render_cart_infos();
     }
 
     void flash_screen_scene::exit()
     {
         _pop_up.reset();
+        _popup.reset();
         _gbacart_sprite.set_visible(false);
         _text_sprites.clear();
         _background.reset();
@@ -122,21 +126,44 @@ namespace openflash
 
     void flash_screen_scene::update()
     {
+        if (_request_status == request_status::PENDING)
+        {
+            api::cart_api::instance().update();
+
+            if (api::cart_api::instance().response_available())
+            {
+                _popup.reset();
+                _request_status = request_status::RECENTLY_CHANGED;
+                auto current_cart_infos = api::cart_api::instance().get_cart_infos_response();
+                flash_context::instance().set_current_cart_infos(current_cart_infos);
+            }
+
+            return;
+        }
+
+        if (_request_status == request_status::RECENTLY_CHANGED)
+        {
+            _request_status = request_status::IDLE;
+
+            render_cart_infos();
+        }
+
         if (_pop_up)
         {
             _pop_up->update();
 
-            if (_pop_up->is_open())
-                return;
+            auto confirmation_status = _pop_up->get_confirmation_response();
 
-            bool confirmed = _pop_up->get_confirmation_response();
-            _pop_up.reset();
-            set_content_priority(0);
-
-            if (confirmed)
+            if (confirmation_status == confirmation_request_status::POSITIVE)
             {
-                api::process_info_api::instance().start(process_type::FLASHING);
-                scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
+                scene_state_machine::instance().request_process_progress(process_type::FLASHING);
+                set_content_priority(1);
+                _pop_up.reset();
+            }
+            else if (confirmation_status == confirmation_request_status::NEGATIVE)
+            {
+                set_content_priority(1);
+                _pop_up.reset();
             }
 
             return;
@@ -158,10 +185,10 @@ namespace openflash
 
         if (bn::keypad::select_pressed())
         {
-            auto cart_infos = api::cart_api::instance().get_current_cart_infos();
-
-            if (cart_infos.has_value())
-                flash_context::instance().set_current_cart_infos(cart_infos.value());
+            _request_status = request_status::PENDING;
+            api::cart_api::instance().request_cart_infos();
+            _popup.emplace("Getting cart infos...", false);
+            _popup->render();
         }
     }
 
@@ -171,6 +198,8 @@ namespace openflash
             _background->set_priority(priority);
 
         _gbacart_sprite.set_bg_priority(priority);
+        _text_generator_8x16.set_bg_priority(priority);
+        _text_generator_8x8.set_bg_priority(priority);
 
         for (auto &sprite : _text_sprites)
             sprite.set_bg_priority(priority);
@@ -189,4 +218,4 @@ namespace openflash
     {
         _title = title;
     }
-}
+} // namespace openflash

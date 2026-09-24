@@ -20,7 +20,7 @@ namespace openflash
 {
     class process_save_info_scene : public i_scene
     {
-    private:
+      private:
         bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
@@ -36,10 +36,11 @@ namespace openflash
         bn::vector<bn::sprite_ptr, 4> _sprites;
 
         cart_infos _current_cart_infos;
+        bool _pending_cart_infos_request;
 
         void set_content_priority(int priority);
 
-    public:
+      public:
         process_save_info_scene();
         virtual ~process_save_info_scene() = default;
         virtual void enter();
@@ -49,6 +50,6 @@ namespace openflash
         virtual scene_type get_scene_type();
         virtual void set_title(const bn::string_view &title);
     };
-}
+} // namespace openflash
 
 #endif // PROCESS_SAVE_INFO_SCENE_H

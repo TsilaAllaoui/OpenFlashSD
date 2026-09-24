@@ -7,8 +7,9 @@
 #include "bn_sprite_text_generator.h"
 
 #include "cart_infos.h"
-#include "utilities/pop_up.h"
+#include "api/requests.h"
 #include "scenes/i_scene.h"
+#include "utilities/pop_up.h"
 #include "scenes/scene_type.h"
 
 constexpr int dump_scene_max_text_sprite_count = 100;
@@ -20,26 +21,23 @@ namespace openflash
 {
     class dump_rom_info_scene : public i_scene
     {
-    private:
+      private:
         bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
-        bn::optional<pop_up> _pop_up;
+        bn::optional<pop_up> _confirmation_pop_up;
         bn::sprite_text_generator _text_generator_8x16;
         bn::sprite_text_generator _text_generator_8x8;
         bn::vector<bn::sprite_ptr, dump_scene_max_text_sprite_count> _text_sprites;
-
-        int gbacart_index = 0;
-        int arrow_index = 1;
-        int save_1_index = 2;
-        int save_2_index = 3;
         bn::vector<bn::sprite_ptr, 4> _sprites;
 
         cart_infos _current_cart_infos;
+        request_status _request_status;
+        bn::optional<pop_up> _popup;
 
         void set_content_priority(int priority);
 
-    public:
+      public:
         dump_rom_info_scene();
         virtual ~dump_rom_info_scene() = default;
         virtual void enter();
@@ -48,7 +46,8 @@ namespace openflash
         virtual void render();
         virtual scene_type get_scene_type();
         virtual void set_title(const bn::string_view &title);
+        void render_cart_infos();
     };
-}
+} // namespace openflash
 
 #endif // DUMP_ROM_INFO_SCENE_H

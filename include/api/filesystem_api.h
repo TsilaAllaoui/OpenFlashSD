@@ -3,7 +3,6 @@
 
 #include "bn_optional.h"
 #include "bn_vector.h"
-
 #include "file_entry.h"
 
 namespace openflash
@@ -12,7 +11,7 @@ namespace openflash
     {
         class filesystem_api
         {
-        private:
+          private:
             filesystem_api();
             ~filesystem_api() = default;
 
@@ -20,16 +19,18 @@ namespace openflash
             bn::optional<file_type> _file_filter;
             bool _loading;
             bool _response_ready;
+#ifdef USEMOCK
             int _mock_frames;
+#endif
 
-        public:
+          public:
             static filesystem_api &instance();
             void request_files(bn::optional<file_type> file_filter);
             void update();
             bool response_available() const;
             const bn::vector<file_entry, max_file_count> &get_files_response() const;
         };
-    }
-}
+    } // namespace api
+} // namespace openflash
 
 #endif // FILESYSTEM_API_H

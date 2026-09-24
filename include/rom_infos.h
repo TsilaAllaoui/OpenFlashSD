@@ -19,6 +19,6 @@ namespace openflash
         bool header_valid;
         save_type savetype;
     };
-}
+} // namespace openflash
 
 #endif // ROM_INFOS_H

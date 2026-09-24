@@ -34,6 +34,6 @@ namespace openflash
         process_status status;
         process_type type;
     };
-}
+} // namespace openflash
 
 #endif // PROCESS_INFOS_H

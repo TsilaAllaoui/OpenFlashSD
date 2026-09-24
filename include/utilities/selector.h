@@ -16,14 +16,14 @@ namespace openflash
 {
     class selector : public i_pop_up
     {
-    private:
+      private:
         bn::sprite_text_generator _text_generator;
         bn::vector<bn::sprite_ptr, 32> _text_sprites;
         bn::optional<bn::regular_bg_ptr> _selector_bg;
         bn::optional<bn::regular_bg_map_ptr> _bg_map;
         selector *_instance;
 
-    public:
+      public:
         selector();
         virtual ~selector() = default;
         virtual void render();
@@ -31,6 +31,6 @@ namespace openflash
         virtual void dismiss();
         void update_position(int index);
     };
-}
+} // namespace openflash
 
 #endif // SELECTOR_H

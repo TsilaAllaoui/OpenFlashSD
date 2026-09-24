@@ -35,7 +35,7 @@ TARGET      	:=  $(notdir $(CURDIR))
 BUILD       	:=  build
 LIBBUTANO   	:=  lib/butano/butano
 PYTHON      	:=  python3
-SOURCES     	:=  src src/api src/generated src/mock src/scenes src/utilities
+SOURCES     	:=  src src/api src/generated src/scenes src/utilities
 INCLUDES    	:=  include include/api include/generated include/mock include/scenes include/utilities lib/butano/common/include
 DATA        	:=
 GRAPHICS    	:=  graphics lib/butano/common/graphics
@@ -45,10 +45,16 @@ DMGAUDIO            :=
 DMGAUDIOBACKEND     := null
 ROMTITLE    	:=  ROM TITLE
 ROMCODE     	:=  SBTP
-USERFLAGS   	:=  -O0 -g3 -fno-inline -fno-omit-frame-pointer
-# USERFLAGS   	:=  -Os -flto=auto
-USERCXXFLAGS	:=  
-USERASFLAGS 	:=  
+# USERFLAGS   	:=  -O0 -g3 -fno-inline -fno-omit-frame-pointer
+USERFLAGS   	:=  -Os -flto=auto
+USEMOCK          ?=  1
+
+ifeq ($(USEMOCK),1)
+    SOURCES       +=  src/mock
+    USERCXXFLAGS  +=  -DUSEMOCK
+endif
+
+USERASFLAGS 	:=
 USERLDFLAGS 	:=  
 USERLIBDIRS 	:=  
 USERLIBS    	:=  
