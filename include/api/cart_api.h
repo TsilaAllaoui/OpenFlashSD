@@ -1,8 +1,8 @@
 #ifndef CART_API_H
 #define CART_API_H
 
-#include "bn_optional.h"
 #include "cart_infos.h"
+#include "bn_optional.h"
 
 namespace openflash
 {
@@ -10,9 +10,7 @@ namespace openflash
     {
         class cart_api
         {
-          private:
-            cart_api();
-
+        private:
             bn::optional<cart_infos> _current_cart_infos;
             bool _loading;
             bool _response_ready;
@@ -20,7 +18,9 @@ namespace openflash
             int _mock_frames;
 #endif
 
-          public:
+            cart_api();
+
+        public:
             ~cart_api() = default;
             static cart_api &instance();
             void request_cart_infos();
@@ -28,7 +28,7 @@ namespace openflash
             bool response_available() const;
             const cart_infos &get_cart_infos_response() const;
         };
-    } // namespace api
-} // namespace openflash
+    }
+}
 
 #endif // CART_API_H

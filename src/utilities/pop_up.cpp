@@ -17,18 +17,27 @@ constexpr int title_y = 16;
 
 namespace openflash
 {
-    pop_up::pop_up(const bn::string_view &title, bool cancellable, bool acceptable, bn::sprite_ptr *cursor_sprite_ptr)
-        : _title(title), _pop_up_bg(),
+    pop_up::pop_up(const bn::string_view &title,
+                   bool cancellable,
+                   bool acceptable,
+                   bn::sprite_ptr *cursor_sprite_ptr)
+        : _title(title),
+          _pop_up_bg(),
           _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
-          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)), _text_sprites(),
-          _cursor_sprite_ptr(cursor_sprite_ptr), _old_cursor_pos(),
-          _confirmation_response(confirmation_request_status::PENDING), _cancellable(cancellable),
-          _acceptable(acceptable), _open(true)
+          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
+          _text_sprites(),
+          _cursor_sprite_ptr(cursor_sprite_ptr),
+          _old_cursor_pos(),
+          _confirmation_response(confirmation_request_status::PENDING),
+          _cancellable(cancellable),
+          _acceptable(acceptable),
+          _open(true)
     {
         bn::bg_tiles::set_allow_offset(false);
-        _pop_up_bg.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
-                                               bn::regular_bg_tiles_items::tiles_palette,
-                                               openflash::pop_up_bg_map_item)
+        _pop_up_bg.emplace(bn::regular_bg_item(
+                               bn::regular_bg_tiles_items::tiles,
+                               bn::regular_bg_tiles_items::tiles_palette,
+                               openflash::pop_up_bg_map_item)
                                .create_bg(0, 0));
         bn::regular_bg_map_ptr popup_map_ptr = _pop_up_bg.value().map();
         popup_map_ptr.reload_cells_ref();
@@ -36,7 +45,10 @@ namespace openflash
         _pop_up_bg->put_above();
         bn::bg_tiles::set_allow_offset(true);
 
-        text_helpers::draw_centered(_text_generator_8x16, _title, -title_y - 8, _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x16,
+                                    _title,
+                                    -title_y - 8,
+                                    _text_sprites);
 
         bn::string<64> body_text;
 
@@ -55,7 +67,11 @@ namespace openflash
             body_text += "Please wait...";
         }
 
-        text_helpers::draw_centered_at(_text_generator_8x8, body_text, title_x, title_y, _text_sprites);
+        text_helpers::draw_centered_at(_text_generator_8x8,
+                                       body_text,
+                                       title_x,
+                                       title_y,
+                                       _text_sprites);
 
         for (auto &sprite : _text_sprites)
             sprite.set_bg_priority(0);
@@ -119,4 +135,4 @@ namespace openflash
     {
         return _open;
     }
-} // namespace openflash
+}

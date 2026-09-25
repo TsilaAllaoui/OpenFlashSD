@@ -10,7 +10,7 @@ namespace openflash
 {
     class file_brower_scene : public i_scene
     {
-      private:
+    private:
         bn::string_view _title;
         bn::optional<file_browser> _file_browser;
         bn::optional<pop_up> _loading_popup;
@@ -24,7 +24,7 @@ namespace openflash
 
         void set_content_priority(int priority);
 
-      public:
+    public:
         file_brower_scene();
         virtual ~file_brower_scene() = default;
         virtual void enter();
@@ -35,6 +35,6 @@ namespace openflash
         void delete_file_browser_snapshot();
         virtual void set_title(const bn::string_view &title);
     };
-} // namespace openflash
+}
 
 #endif // FILE_BROWSER_SCENE_H

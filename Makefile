@@ -36,26 +36,35 @@ BUILD       	:=  build
 LIBBUTANO   	:=  lib/butano/butano
 PYTHON      	:=  python3
 SOURCES     	:=  src src/api src/generated src/scenes src/utilities
-INCLUDES    	:=  include include/api include/generated include/mock include/scenes include/utilities lib/butano/common/include
+INCLUDES    	:=  include include/api include/generated include/mock include/scenes include/utilities
 DATA        	:=
-GRAPHICS    	:=  graphics lib/butano/common/graphics
+GRAPHICS    	:=  graphics
 AUDIO               :=
 AUDIOBACKEND        := null
 DMGAUDIO            :=
 DMGAUDIOBACKEND     := null
 ROMTITLE    	:=  ROM TITLE
 ROMCODE     	:=  SBTP
-# USERFLAGS   	:=  -O0 -g3 -fno-inline -fno-omit-frame-pointer
-USERFLAGS   	:=  -Os -flto=auto
-USEMOCK          ?=  1
+OPENFLASH_MOCK ?= 1
+OPENFLASH_DEBUG ?= 0
 
-ifeq ($(USEMOCK),1)
-    SOURCES       +=  src/mock
-    USERCXXFLAGS  +=  -DUSEMOCK
+USERCXXFLAGS :=
+USERASFLAGS  :=
+
+ifeq ($(OPENFLASH_MOCK),1)
+SOURCES      += src/mock
+USERCXXFLAGS += -DUSEMOCK
 endif
 
-USERASFLAGS 	:=
-USERLDFLAGS 	:=  
+ifeq ($(OPENFLASH_DEBUG),1)
+USERFLAGS    := -Os -g3 -fno-omit-frame-pointer
+USERLDFLAGS  :=
+USERCXXFLAGS += -DBN_CFG_LOG_ENABLED=true -DBN_CFG_ASSERT_ENABLED=true
+else
+USERFLAGS    := -Os -flto=auto
+USERLDFLAGS  := -flto=auto
+USERCXXFLAGS += -DBN_CFG_LOG_ENABLED=false -DBN_CFG_ASSERT_ENABLED=false
+endif
 USERLIBDIRS 	:=  
 USERLIBS    	:=  
 DEFAULTLIBS 	:=  

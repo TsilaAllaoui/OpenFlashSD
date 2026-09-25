@@ -14,10 +14,16 @@
 namespace openflash
 {
     file_brower_scene::file_brower_scene()
-        : _file_browser(), _loading_popup(), _type(scene_type::FILE_BROWSER), _background(),
+        : _file_browser(),
+          _loading_popup(),
+          _type(scene_type::FILE_BROWSER),
+          _background(),
           _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
-          _sdcard_sprite(bn::sprite_items::sdcard.create_sprite(screen_left + 12, screen_top + 12)),
-          _previous_file_browser(), _loading_files(false)
+          _sdcard_sprite(bn::sprite_items::sdcard.create_sprite(
+              screen_left + 12,
+              screen_top + 12)),
+          _previous_file_browser(),
+          _loading_files(false)
     {
         _sdcard_sprite.set_visible(false);
     }
@@ -26,12 +32,16 @@ namespace openflash
     {
         _sdcard_sprite.set_visible(true);
 
-        text_helpers::draw_centered(_text_generator, "File Browser", screen_top + 12, _text_sprites);
+        text_helpers::draw_centered(_text_generator,
+                                    "File Browser",
+                                    screen_top + 12,
+                                    _text_sprites);
 
         bn::bg_tiles::set_allow_offset(false);
-        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
-                                                bn::regular_bg_tiles_items::tiles_palette,
-                                                openflash::file_browser_bg_map_item)
+        _background.emplace(bn::regular_bg_item(
+                                bn::regular_bg_tiles_items::tiles,
+                                bn::regular_bg_tiles_items::tiles_palette,
+                                openflash::file_browser_bg_map_item)
                                 .create_bg(0, 0));
         _background->set_top_left_position(0, 0);
         bn::regular_bg_map_ptr bg_map_ptr = _background->map();
@@ -54,8 +64,9 @@ namespace openflash
         _loading_popup.reset();
         _loading_files = false;
 
-        if (_file_browser && _file_browser->restore_browser_state()
-            && scene_state_machine::instance().get_last_request_scene() != scene_type::MAIN_MENU)
+        if (_file_browser &&
+            _file_browser->restore_browser_state() &&
+            scene_state_machine::instance().get_last_request_scene() != scene_type::MAIN_MENU)
         {
             _previous_file_browser = _file_browser->get_snapshot();
         }
@@ -127,4 +138,4 @@ namespace openflash
     {
         _title = title;
     }
-} // namespace openflash
+}

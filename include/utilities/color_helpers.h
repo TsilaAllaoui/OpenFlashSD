@@ -10,6 +10,6 @@ namespace openflash
     {
         void replace_bg_color(bn::regular_bg_ptr &bg, bn::color old_color, bn::color new_color);
     }
-} // namespace openflash
+}
 
 #endif // COLOR_HELPERS_H

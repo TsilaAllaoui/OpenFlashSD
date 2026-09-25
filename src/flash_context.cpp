@@ -51,4 +51,14 @@ namespace openflash
     {
         return _current_save_infos;
     }
-} // namespace openflash
+
+    void flash_context::set_requested_process_type(const process_type &type)
+    {
+        _current_process_type = type;
+    }
+
+    bn::optional<process_type> flash_context::get_requested_process_type()
+    {
+        return _current_process_type;
+    }
+}

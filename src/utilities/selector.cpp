@@ -17,17 +17,22 @@
 constexpr int selector_width = 48;
 constexpr int title_offset_y = 12;
 
-constexpr bn::array<bn::point, 3> selector_positions = {bn::point(19, 88), bn::point(99, 88), bn::point(172, 88)};
+constexpr bn::array<bn::point, 3> selector_positions = {bn::point(19, 88),
+                                                        bn::point(99, 88),
+                                                        bn::point(172, 88)};
 
-constexpr bn::array<bn::string_view, 3> titles = {" Flash Cart", "Cart Dump", "Save Manager"};
+constexpr bn::array<bn::string_view, 3> titles = {" Flash Cart",
+                                                  "Cart Dump",
+                                                  "Save Manager"};
 
 namespace openflash
 {
     selector::selector()
-        : _text_generator(common::variable_8x16_sprite_font), _text_sprites(), _selector_bg(), _bg_map()
+        : _text_generator(common::variable_8x16_sprite_font),
+          _text_sprites(),
+          _selector_bg(),
+          _bg_map()
     {
-        _text_generator.set_bg_priority(1);
-
         bn::bg_tiles::set_allow_offset(false);
 
         auto bg_item = bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
@@ -110,4 +115,4 @@ namespace openflash
                                        text_y,
                                        _text_sprites);
     }
-} // namespace openflash
+}

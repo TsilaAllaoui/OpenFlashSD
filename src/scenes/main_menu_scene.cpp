@@ -22,13 +22,15 @@
 namespace openflash
 {
     main_menu_bg_scene::main_menu_bg_scene()
-        : _type(scene_type::MAIN_MENU), _background(), _selector(),
+        : _type(scene_type::MAIN_MENU),
+          _background(),
+          _selector(),
           _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
-          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)), _current_menu_index(0),
-          _pending_cart_infos_request(false), _popup()
+          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
+          _current_menu_index(0),
+          _pending_cart_infos_request(false),
+          _popup()
     {
-        _text_generator_8x16.set_bg_priority(1);
-        _text_generator_8x8.set_bg_priority(1);
     }
 
     void main_menu_bg_scene::enter()
@@ -36,21 +38,27 @@ namespace openflash
         _text_generator_8x16.set_left_alignment();
 
         // header
-        text_helpers::draw_centered(_text_generator_8x16, "OpenFlashSD", screen_top + 12, _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x16,
+                                    "OpenFlashSD",
+                                    screen_top + 12,
+                                    _text_sprites);
 
         // background
         bn::bg_tiles::set_allow_offset(false);
-        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
-                                                bn::regular_bg_tiles_items::tiles_palette,
-                                                openflash::main_menu_bg_map_item)
+        _background.emplace(bn::regular_bg_item(
+                                bn::regular_bg_tiles_items::tiles,
+                                bn::regular_bg_tiles_items::tiles_palette,
+                                openflash::main_menu_bg_map_item)
                                 .create_bg(0, 0));
         _background.value().set_top_left_position(0, 0);
-        _background->set_priority(1);
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
         bg_map_ptr.reload_cells_ref();
         bn::bg_tiles::set_allow_offset(true);
 
-        text_helpers::draw_centered(_text_generator_8x8, "A: Choose      SELECT: Refresh cart", 65, _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x8,
+                                    "A: Choose      SELECT: Refresh cart",
+                                    65,
+                                    _text_sprites);
 
         // selector
         _selector = selector();
@@ -72,10 +80,13 @@ namespace openflash
         if (_pending_cart_infos_request)
         {
             api::cart_api::instance().update();
+            _popup.emplace("Getting cart infos...", false);
+            _popup->update();
+            _popup->render();
 
             if (api::cart_api::instance().response_available())
             {
-                _popup.reset();
+                _popup->dismiss();
                 _pending_cart_infos_request = false;
                 auto current_cart_infos = api::cart_api::instance().get_cart_infos_response();
                 flash_context::instance().set_current_cart_infos(current_cart_infos);
@@ -117,8 +128,6 @@ namespace openflash
         {
             _pending_cart_infos_request = true;
             api::cart_api::instance().request_cart_infos();
-            _popup.emplace("Getting cart infos...", false);
-            _popup->render();
         }
     }
 
@@ -136,4 +145,4 @@ namespace openflash
     {
         _title = title;
     }
-} // namespace openflash
+}

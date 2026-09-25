@@ -7,7 +7,7 @@ int main()
 
     // Set first scene
     openflash::scene_state_machine::instance().request_scene_state(openflash::scene_type::MAIN_MENU);
-
+    
     while (true)
     {
         openflash::scene_state_machine::instance().update_current_scene();

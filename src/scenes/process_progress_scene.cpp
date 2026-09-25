@@ -1,7 +1,7 @@
 #include "bn_array.h"
-#include "bn_assert.h"
 #include "bn_display.h"
 #include "bn_bg_tiles.h"
+#include "bn_bg_palette_ptr.h"
 #include "bn_regular_bg_ptr.h"
 #include "bn_sprite_items_info.h"
 #include "bn_sprite_items_arrow.h"
@@ -10,9 +10,7 @@
 #include "bn_regular_bg_tiles_ptr.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 
-#include "api/cart_api.h"
 #include "flash_context.h"
-#include "bn_bg_palette_ptr.h"
 #include "api/process_info_api.h"
 #include "scene_state_machine.h"
 #include "process_progress_scene.h"
@@ -23,11 +21,10 @@
 namespace openflash
 {
     process_progress_scene::process_progress_scene()
-        : _type(scene_type::PROCESS_PROGRESS), _process_type(process_type::DUMPING), _process_type_ready(false),
-          _background(), _bg_map(), _pop_up(),
+        : _type(scene_type::PROCESS_PROGRESS), _background(), _bg_map(), _pop_up(),
           _text_generator(bn::sprite_text_generator(common::variable_8x16_sprite_font)), _sprites(),
           _current_cart_infos(), _progress_index(3), old_progress_index(_progress_index),
-          _pending_process_infos_request(request_status::IDLE), _pending_cart_infos_request(request_status::IDLE)
+          _pending_process_infos_request(request_status::IDLE)
     {
         _sprites.emplace_back(bn::sprite_items::arrow.create_sprite(5, -10));
         _sprites.emplace_back(bn::sprite_items::info.create_sprite(-bn::display::width() / 2 + 30, 60));
@@ -40,18 +37,20 @@ namespace openflash
 
     void process_progress_scene::update_screen_infos()
     {
-        if (_pending_process_infos_request != request_status::PENDING)
-            return;
-
         auto &process_api = api::process_info_api::instance();
 
-        if (!process_api.response_available())
+        if (_pending_process_infos_request == request_status::PENDING && !process_api.response_available())
             return;
 
         _pending_process_infos_request = request_status::IDLE;
 
         const auto &current_process_infos = process_api.get_process_infos_response();
-        const process_type type = current_process_infos.type;
+        auto current_process_type = flash_context::instance().get_requested_process_type();
+
+        if (!current_process_type.has_value())
+            BN_ERROR("Process type is nullopt");
+
+        process_type type = current_process_type.value();
 
         if (current_process_infos.progress >= 100)
         {
@@ -84,13 +83,16 @@ namespace openflash
         }
 
         _text_sprites.clear();
+
         text_helpers::draw_centered(_text_generator, _title, screen_top + 12, _text_sprites);
 
         bn::string<max_character_count> header_text;
 
         if (type == process_type::DUMPING)
         {
-            BN_ASSERT(_current_cart_infos.has_value(), "Cart infos is nullopt");
+            if (!_current_cart_infos.has_value())
+                BN_ERROR("Cart infos is nullopt");
+
             header_text = "Path: \"/dump/";
             header_text += _current_cart_infos->cart_rom_infos.name;
             header_text += ".gba\"";
@@ -108,7 +110,9 @@ namespace openflash
         }
         else if (type == process_type::BACKUP_SAVE)
         {
-            BN_ASSERT(_current_cart_infos.has_value(), "Cart infos is nullopt");
+            if (!_current_cart_infos.has_value())
+                BN_ERROR("Cart infos is nullopt");
+
             header_text = "Path: \"/saves/";
             header_text += _current_cart_infos->cart_rom_infos.name;
             header_text += ".sav\"";
@@ -126,13 +130,16 @@ namespace openflash
         }
 
         if (!header_text.empty())
+        {
             text_helpers::draw_centered_at(_text_generator,
                                            text_helpers::truncate_text(header_text, 32),
                                            0,
                                            -48,
                                            _text_sprites);
+        }
 
         text_helpers::draw_centered_at(_text_generator, "DO NOT POWER OFF CONSOLE", 10, 60, _text_sprites);
+
         text_helpers::draw_centered_at(_text_generator,
                                        bn::to_string<32>(current_process_infos.progress) + "%",
                                        85,
@@ -160,6 +167,7 @@ namespace openflash
             elapsed_text += "0";
 
         elapsed_text += bn::to_string<32>(current_process_infos.elapsed_time.seconds);
+
         text_helpers::draw_centered_at(_text_generator,
                                        elapsed_text,
                                        -bn::display::width() / 2 + 50,
@@ -169,12 +177,17 @@ namespace openflash
         bn::string<32> speed_text = "Speed: ";
         speed_text += bn::to_string<32>(current_process_infos.speed);
         speed_text += "KiB/s";
+
         text_helpers::draw_centered_at(_text_generator, speed_text, 60, 40, _text_sprites);
 
-        set_content_priority(1);
-
         for (auto &sprite : _sprites)
+        {
             sprite.set_visible(true);
+            sprite.set_bg_priority(1);
+        }
+
+        for (auto &sprite : _text_sprites)
+            sprite.set_bg_priority(1);
 
         process_api.request_process_infos();
         _pending_process_infos_request = request_status::PENDING;
@@ -199,22 +212,31 @@ namespace openflash
 
     void process_progress_scene::enter()
     {
-        BN_ASSERT(_process_type_ready, "Process type was not set before entering PROCESS_PROGRESS");
-
         _pop_up.reset();
         _current_cart_infos = flash_context::instance().get_current_cart_infos();
         _progress_index = 3;
         old_progress_index = _progress_index;
-        _pending_cart_infos_request = request_status::IDLE;
         _pending_process_infos_request = request_status::IDLE;
+
+        auto current_process_type = flash_context::instance().get_requested_process_type();
+
+        if (!current_process_type.has_value())
+            BN_ERROR("Process type is nullopt");
+
+        process_type type = current_process_type.value();
+
+        if ((type == process_type::DUMPING || type == process_type::BACKUP_SAVE) && !_current_cart_infos.has_value())
+            BN_ERROR("Cart infos is nullopt");
 
         bn::bg_tiles::set_allow_offset(false);
 
         constexpr int map_width = 32;
         constexpr int map_height = 32;
         constexpr int map_cell_count = map_width * map_height;
+
         alignas(4) bn::array<bn::regular_bg_map_cell, map_cell_count> decompressed_cells;
         [[maybe_unused]] auto result = process_progress_scene_bg_map_item.decompress(decompressed_cells);
+
         auto tiles = bn::regular_bg_tiles_items::tiles.create_tiles();
         auto palette = bn::regular_bg_tiles_items::tiles_palette.create_palette();
         _bg_map.emplace(bn::regular_bg_map_ptr::allocate(bn::size(map_width, map_height),
@@ -222,7 +244,9 @@ namespace openflash
                                                          bn::move(palette)));
 
         auto vram = _bg_map->vram();
-        BN_ASSERT(vram.has_value(), "BG map VRAM is nullopt");
+
+        if (!vram.has_value())
+            BN_ERROR("BG map VRAM is nullopt");
 
         const int tiles_offset = _bg_map->tiles_offset();
         const int palette_offset = _bg_map->palette_banks_offset();
@@ -239,19 +263,11 @@ namespace openflash
         _background->set_top_left_position(0, 0);
         _background->set_priority(1);
         bn::bg_tiles::set_allow_offset(true);
+
         set_content_priority(1);
 
-        if ((_process_type == process_type::DUMPING || _process_type == process_type::BACKUP_SAVE)
-            && !_current_cart_infos.has_value())
-        {
-            _pending_cart_infos_request = request_status::PENDING;
-            api::cart_api::instance().request_cart_infos();
-            _pop_up.emplace("Getting cart infos...", false);
-            _pop_up->render();
-        }
-
         auto &process_api = api::process_info_api::instance();
-        process_api.start_process(_process_type);
+        process_api.start_process(type);
         process_api.request_process_infos();
         _pending_process_infos_request = request_status::PENDING;
     }
@@ -269,29 +285,12 @@ namespace openflash
         _current_cart_infos.reset();
         _progress_index = 3;
         old_progress_index = _progress_index;
-        _pending_cart_infos_request = request_status::IDLE;
         _pending_process_infos_request = request_status::IDLE;
-        _process_type_ready = false;
         api::process_info_api::instance().request_process_infos_reset();
     }
 
     void process_progress_scene::update()
     {
-        if (_pending_cart_infos_request == request_status::PENDING)
-        {
-            auto &cart_api = api::cart_api::instance();
-            cart_api.update();
-
-            if (!cart_api.response_available())
-                return;
-
-            _current_cart_infos.emplace(cart_api.get_cart_infos_response());
-            flash_context::instance().set_current_cart_infos(*_current_cart_infos);
-            _pending_cart_infos_request = request_status::IDLE;
-            _pop_up.reset();
-            set_content_priority(1);
-        }
-
         if (_pop_up)
         {
             _pop_up->update();
@@ -334,20 +333,5 @@ namespace openflash
     void process_progress_scene::set_title(const bn::string_view &title)
     {
         _title = title;
-    }
-
-    void process_progress_scene::set_process_type(process_type type)
-    {
-        _process_type = type;
-        _process_type_ready = true;
-
-        if (type == process_type::DUMPING)
-            _title = "Dump Cartridge";
-        else if (type == process_type::FLASHING)
-            _title = "Flashing Cartridge";
-        else if (type == process_type::BACKUP_SAVE)
-            _title = "Backup Save";
-        else
-            _title = "Restore Save";
     }
 } // namespace openflash

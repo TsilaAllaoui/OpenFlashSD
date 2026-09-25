@@ -1,13 +1,8 @@
-#include "bn_array.h"
-#include "bn_string_view.h"
-#include <cstdint>
+#include "rom_info_api.h"
 
 #ifdef USEMOCK
 #include "mock/mocks.h"
 #endif
-
-#include "rom_infos.h"
-#include "rom_info_api.h"
 
 namespace openflash
 {
@@ -25,13 +20,13 @@ namespace openflash
             auto header = mock::get_gba_header(file.path);
             auto infos = mock::get_gba_file_info(header.data());
             infos.file_path = file.path;
-            _current_rom_infos = infos;
-            return _current_rom_infos;
+            _current_rom_infos.emplace(infos);
 #else
-            // TODO: request ROM info from the ESP32.
+            (void) file;
             _current_rom_infos.reset();
-            return bn::nullopt;
+            // Request ROM information from ESP32 here.
 #endif
+            return _current_rom_infos;
         }
-    } // namespace api
-} // namespace openflash
+    }
+}

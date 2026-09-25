@@ -1,5 +1,4 @@
 #include "bn_keypad.h"
-#include "bn_core.h"
 #include "bn_display.h"
 #include "bn_bg_tiles.h"
 #include "bn_regular_bg_item.h"
@@ -13,7 +12,6 @@
 #include "flash_screen_bg.h"
 #include "utilities/pop_up.h"
 #include "scene_state_machine.h"
-#include "api/process_info_api.h"
 #include "utilities/text_helpers.h"
 #include "bn_regular_bg_tiles_items_tiles.h"
 #include "common_variable_8x16_sprite_font.h"
@@ -23,11 +21,14 @@
 namespace openflash
 {
     flash_screen_scene::flash_screen_scene()
-        : _type(scene_type::FLASH_SCREEN), _background(), _pop_up(),
+        : _type(scene_type::FLASH_SCREEN),
+          _background(),
+          _pop_up(),
           _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
           _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
           _gbacart_sprite(bn::sprite_items::gbacart.create_sprite(screen_left + 12, screen_top + 12)),
-          _request_status(request_status::IDLE), _popup()
+          _request_status(request_status::IDLE),
+          _popup()
     {
         _gbacart_sprite.set_visible(false);
 
@@ -88,7 +89,10 @@ namespace openflash
         cart_infos_text += cart_infos->name;
         text_helpers::draw_centered(_text_generator_8x16, cart_infos_text, 30, _text_sprites);
 
-        text_helpers::draw_centered(_text_generator_8x8, "A: Flash  B: Back  SELECT: Refresh Cart", 65, _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x8,
+                                    "A: Flash  B: Back  SELECT: Refresh Cart",
+                                    65, _text_sprites);
+
 
         set_content_priority(1);
     }
@@ -103,9 +107,10 @@ namespace openflash
 
         // Background
         bn::bg_tiles::set_allow_offset(false);
-        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
-                                                bn::regular_bg_tiles_items::tiles_palette,
-                                                openflash::flash_screen_bg_map_item)
+        _background.emplace(bn::regular_bg_item(
+                                bn::regular_bg_tiles_items::tiles,
+                                bn::regular_bg_tiles_items::tiles_palette,
+                                openflash::flash_screen_bg_map_item)
                                 .create_bg(0, 0));
         _background.value().set_top_left_position(0, 0);
         bn::regular_bg_map_ptr bg_map_ptr = _background.value().map();
@@ -119,6 +124,7 @@ namespace openflash
     {
         _pop_up.reset();
         _popup.reset();
+        _request_status = request_status::IDLE;
         _gbacart_sprite.set_visible(false);
         _text_sprites.clear();
         _background.reset();
@@ -128,24 +134,23 @@ namespace openflash
     {
         if (_request_status == request_status::PENDING)
         {
-            api::cart_api::instance().update();
+            auto &cart_api = api::cart_api::instance();
+            cart_api.update();
 
-            if (api::cart_api::instance().response_available())
-            {
-                _popup.reset();
-                _request_status = request_status::RECENTLY_CHANGED;
-                auto current_cart_infos = api::cart_api::instance().get_cart_infos_response();
-                flash_context::instance().set_current_cart_infos(current_cart_infos);
-            }
+            if (!cart_api.response_available())
+                return;
 
+            flash_context::instance().set_current_cart_infos(cart_api.get_cart_infos_response());
+            _popup.reset();
+            _request_status = request_status::RECENTLY_CHANGED;
             return;
         }
 
         if (_request_status == request_status::RECENTLY_CHANGED)
         {
             _request_status = request_status::IDLE;
-
             render_cart_infos();
+            return;
         }
 
         if (_pop_up)
@@ -156,9 +161,9 @@ namespace openflash
 
             if (confirmation_status == confirmation_request_status::POSITIVE)
             {
-                scene_state_machine::instance().request_process_progress(process_type::FLASHING);
-                set_content_priority(1);
+                flash_context::instance().set_requested_process_type(process_type::FLASHING);
                 _pop_up.reset();
+                scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
             }
             else if (confirmation_status == confirmation_request_status::NEGATIVE)
             {
@@ -189,6 +194,7 @@ namespace openflash
             api::cart_api::instance().request_cart_infos();
             _popup.emplace("Getting cart infos...", false);
             _popup->render();
+            return;
         }
     }
 
@@ -198,8 +204,6 @@ namespace openflash
             _background->set_priority(priority);
 
         _gbacart_sprite.set_bg_priority(priority);
-        _text_generator_8x16.set_bg_priority(priority);
-        _text_generator_8x8.set_bg_priority(priority);
 
         for (auto &sprite : _text_sprites)
             sprite.set_bg_priority(priority);
@@ -218,4 +222,4 @@ namespace openflash
     {
         _title = title;
     }
-} // namespace openflash
+}

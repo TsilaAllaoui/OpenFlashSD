@@ -36,7 +36,7 @@ namespace openflash
         bn::vector<bn::sprite_ptr, 4> _sprites;
 
         cart_infos _current_cart_infos;
-        bool _pending_cart_infos_request;
+        request_status _request_status;
 
         void set_content_priority(int priority);
 
@@ -49,6 +49,7 @@ namespace openflash
         virtual void render();
         virtual scene_type get_scene_type();
         virtual void set_title(const bn::string_view &title);
+        void render_infos();
     };
 } // namespace openflash
 

@@ -15,12 +15,12 @@ namespace openflash
         {
 #ifdef USEMOCK
             _current_save_infos.emplace(file, save_type::FLASH_128K, process_status::WRITING);
-            return _current_save_infos;
 #else
-            // TODO: request save info from the ESP32.
+            (void) file;
             _current_save_infos.reset();
-            return bn::nullopt;
+            // Request save information from ESP32 here.
 #endif
+            return _current_save_infos;
         }
-    } // namespace api
-} // namespace openflash
+    }
+}

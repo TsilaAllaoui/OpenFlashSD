@@ -1,25 +1,20 @@
+#include "api/filesystem_api.h"
+
 #ifdef USEMOCK
 #include "mock/mocks.h"
 #endif
-
-#include "api/filesystem_api.h"
 
 namespace openflash
 {
     namespace api
     {
-#ifdef USEMOCK
-        namespace
-        {
-            constexpr int mock_filesystem_delay_frames = 30;
-        }
-#endif
-
         filesystem_api::filesystem_api()
-            : _files(), _file_filter(), _loading(false), _response_ready(false)
+            : _files(),
+              _file_filter(),
+              _loading(false),
+              _response_ready(false)
 #ifdef USEMOCK
-              ,
-              _mock_frames(0)
+              , _mock_frames(0)
 #endif
         {
         }
@@ -37,7 +32,9 @@ namespace openflash
             _loading = true;
             _response_ready = false;
 #ifdef USEMOCK
-            _mock_frames = mock_filesystem_delay_frames;
+            _mock_frames = 30;
+#else
+            // Request file list from ESP32 here.
 #endif
         }
 
@@ -49,7 +46,7 @@ namespace openflash
 #ifdef USEMOCK
             if (_mock_frames > 0)
             {
-                --_mock_frames;
+                _mock_frames--;
                 return;
             }
 
@@ -66,18 +63,18 @@ namespace openflash
             _loading = false;
             _response_ready = true;
 #else
-                // TODO: poll the ESP32 filesystem request here.
+            // Poll ESP32 response here. Keep _loading true until a complete response is available.
 #endif
         }
 
         bool filesystem_api::response_available() const
         {
-            return _response_ready && !_loading;
+            return _response_ready;
         }
 
         const bn::vector<file_entry, max_file_count> &filesystem_api::get_files_response() const
         {
             return _files;
         }
-    } // namespace api
-} // namespace openflash
+    }
+}

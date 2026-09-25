@@ -9,13 +9,13 @@ namespace openflash
         IDLE,
         RECENTLY_CHANGED
     };
-
+    
     enum class confirmation_request_status
     {
         PENDING,
         NEGATIVE,
         POSITIVE
     };
-} // namespace openflash
+}
 
 #endif // REQUESTS_H

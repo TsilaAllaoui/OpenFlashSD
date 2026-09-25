@@ -1,5 +1,4 @@
 #include "bn_keypad.h"
-#include "bn_core.h"
 #include "bn_display.h"
 #include "bn_bg_tiles.h"
 #include "bn_regular_bg_item.h"
@@ -13,7 +12,6 @@
 #include "api/cart_api.h"
 #include "flash_context.h"
 #include "string_helpers.h"
-#include "flash_screen_bg.h"
 #include "utilities/pop_up.h"
 #include "scene_state_machine.h"
 #include "dump_rom_info_scene_bg.h"
@@ -26,10 +24,14 @@
 namespace openflash
 {
     dump_rom_info_scene::dump_rom_info_scene()
-        : _type(scene_type::DUMP_ROM_INFO), _background(), _confirmation_pop_up(),
+        : _type(scene_type::DUMP_ROM_INFO),
+          _background(),
+          _confirmation_pop_up(),
           _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
-          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)), _sprites(),
-          _request_status(request_status::IDLE), _popup()
+          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
+          _sprites(),
+          _request_status(request_status::IDLE),
+          _popup()
     {
         _sprites.emplace_back(bn::sprite_items::gbacart.create_sprite(screen_left + 30, screen_top + 120));
         _sprites.emplace_back(bn::sprite_items::arrow.create_sprite(screen_left + 46, screen_top + 120));
@@ -52,9 +54,6 @@ namespace openflash
 
         _text_generator_8x16.set_bg_priority(priority);
         _text_generator_8x8.set_bg_priority(priority);
-
-        for (auto &sprite : _text_sprites)
-            sprite.set_bg_priority(priority);
     }
 
     void dump_rom_info_scene::render_cart_infos()
@@ -73,8 +72,7 @@ namespace openflash
         bn::string_view label = "Name:";
         text_helpers::draw_label_value(_text_generator_8x16,
                                        label,
-                                       current_rom_infos_in_cart.name.empty() ? "Unkown name"
-                                                                              : current_rom_infos_in_cart.name,
+                                       current_rom_infos_in_cart.name.empty() ? "Unkown name" : current_rom_infos_in_cart.name,
                                        dump_x_alignment,
                                        -dump_x_alignment,
                                        dump_scene_text_y_top,
@@ -83,9 +81,7 @@ namespace openflash
         label = "Game Code:";
         text_helpers::draw_label_value(_text_generator_8x16,
                                        label,
-                                       current_rom_infos_in_cart.game_code.empty()
-                                           ? "Unkown game code"
-                                           : current_rom_infos_in_cart.game_code,
+                                       current_rom_infos_in_cart.game_code.empty() ? "Unkown game code" : current_rom_infos_in_cart.game_code,
                                        dump_x_alignment,
                                        -dump_x_alignment,
                                        dump_scene_text_y_top + dump_scene_text_y_spacing,
@@ -94,9 +90,7 @@ namespace openflash
         label = "Marker code:";
         text_helpers::draw_label_value(_text_generator_8x16,
                                        label,
-                                       current_rom_infos_in_cart.maker_code.empty()
-                                           ? "Unkown marker code"
-                                           : current_rom_infos_in_cart.maker_code,
+                                       current_rom_infos_in_cart.maker_code.empty() ? "Unkown marker code" : current_rom_infos_in_cart.maker_code,
                                        dump_x_alignment,
                                        -dump_x_alignment,
                                        dump_scene_text_y_top + dump_scene_text_y_spacing * 2,
@@ -113,11 +107,20 @@ namespace openflash
 
         bn::string<max_file_patch_character> cart_name_text = "Cart: ";
         cart_name_text += cart_infos_result->name;
-        text_helpers::draw_centered(_text_generator_8x16, cart_name_text, screen_top + 95, _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x16,
+                                    cart_name_text,
+                                    screen_top + 95,
+                                    _text_sprites);
 
-        text_helpers::draw_centered_at(_text_generator_8x16, "Dump to SD Card", 20, screen_top + 120, _text_sprites);
+        text_helpers::draw_centered_at(_text_generator_8x16,
+                                       "Dump to SD Card",
+                                       20,
+                                       screen_top + 120,
+                                       _text_sprites);
 
-        text_helpers::draw_centered(_text_generator_8x8, "A: Dump  B: Back  SELECT: Refresh Cart", 65, _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x8,
+                                    "A: Flash  B: Back  SELECT: Refresh Cart",
+                                    65, _text_sprites);
 
         for (auto &sprite : _sprites)
         {
@@ -134,9 +137,10 @@ namespace openflash
 
         // Background
         bn::bg_tiles::set_allow_offset(false);
-        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
-                                                bn::regular_bg_tiles_items::tiles_palette,
-                                                openflash::dump_rom_info_scene_bg_map_item)
+        _background.emplace(bn::regular_bg_item(
+                                bn::regular_bg_tiles_items::tiles,
+                                bn::regular_bg_tiles_items::tiles_palette,
+                                openflash::dump_rom_info_scene_bg_map_item)
                                 .create_bg(0, 0));
         _background.value().set_top_left_position(0, 0);
         _background->set_priority(1);
@@ -161,30 +165,30 @@ namespace openflash
 
         _text_sprites.clear();
         _background.reset();
+        _request_status = request_status::IDLE;
     }
 
     void dump_rom_info_scene::update()
     {
         if (_request_status == request_status::PENDING)
         {
-            api::cart_api::instance().update();
+            auto &cart_api = api::cart_api::instance();
+            cart_api.update();
 
-            if (api::cart_api::instance().response_available())
-            {
-                _popup.reset();
-                _request_status = request_status::RECENTLY_CHANGED;
-                auto current_cart_infos = api::cart_api::instance().get_cart_infos_response();
-                flash_context::instance().set_current_cart_infos(current_cart_infos);
-            }
+            if (!cart_api.response_available())
+                return;
 
+            flash_context::instance().set_current_cart_infos(cart_api.get_cart_infos_response());
+            _popup.reset();
+            _request_status = request_status::RECENTLY_CHANGED;
             return;
         }
 
         if (_request_status == request_status::RECENTLY_CHANGED)
         {
             _request_status = request_status::IDLE;
-
             render_cart_infos();
+            return;
         }
 
         if (_confirmation_pop_up)
@@ -195,9 +199,9 @@ namespace openflash
 
             if (confirmation_status == confirmation_request_status::POSITIVE)
             {
-                scene_state_machine::instance().request_process_progress(process_type::DUMPING);
-                set_content_priority(1);
+                flash_context::instance().set_requested_process_type(process_type::DUMPING);
                 _confirmation_pop_up.reset();
+                scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
             }
             else if (confirmation_status == confirmation_request_status::NEGATIVE)
             {
@@ -219,6 +223,7 @@ namespace openflash
             api::cart_api::instance().request_cart_infos();
             _popup.emplace("Getting cart infos...", false);
             _popup->render();
+            return;
         }
 
         if (bn::keypad::a_pressed())
@@ -242,4 +247,4 @@ namespace openflash
     {
         _title = title;
     }
-} // namespace openflash
+}

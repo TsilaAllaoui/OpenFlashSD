@@ -21,7 +21,7 @@ namespace openflash
 {
     class dump_rom_info_scene : public i_scene
     {
-      private:
+    private:
         bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
@@ -37,7 +37,7 @@ namespace openflash
 
         void set_content_priority(int priority);
 
-      public:
+    public:
         dump_rom_info_scene();
         virtual ~dump_rom_info_scene() = default;
         virtual void enter();
@@ -48,6 +48,6 @@ namespace openflash
         virtual void set_title(const bn::string_view &title);
         void render_cart_infos();
     };
-} // namespace openflash
+}
 
 #endif // DUMP_ROM_INFO_SCENE_H

@@ -1,12 +1,10 @@
+#include "cart_api.h"
 #include "bn_assert.h"
 
 #ifdef USEMOCK
 #include "bn_random.h"
 #include "mock/mocks.h"
 #endif
-
-#include "cart_api.h"
-#include "file_entry.h"
 
 namespace openflash
 {
@@ -15,16 +13,16 @@ namespace openflash
 #ifdef USEMOCK
         namespace
         {
-            constexpr int mock_cart_delay_frames = 15;
             bn::random cart_random;
-        } // namespace
+        }
 #endif
 
         cart_api::cart_api()
-            : _current_cart_infos(), _loading(false), _response_ready(false)
+            : _current_cart_infos(),
+              _loading(false),
+              _response_ready(false)
 #ifdef USEMOCK
-              ,
-              _mock_frames(0)
+              , _mock_frames(0)
 #endif
         {
         }
@@ -41,7 +39,9 @@ namespace openflash
             _loading = true;
             _response_ready = false;
 #ifdef USEMOCK
-            _mock_frames = mock_cart_delay_frames;
+            _mock_frames = 15;
+#else
+            // Request cart information from ESP32 here.
 #endif
         }
 
@@ -53,12 +53,12 @@ namespace openflash
 #ifdef USEMOCK
             if (_mock_frames > 0)
             {
-                --_mock_frames;
+                _mock_frames--;
                 return;
             }
 
             _current_cart_infos.emplace();
-            const int random_rom_infos_index = cart_random.get_int(mock::mock_roms_infos.size());
+            int random_rom_infos_index = cart_random.get_int(mock::mock_roms_infos.size());
             const auto &file = mock::mock_roms_infos[random_rom_infos_index];
             auto header = mock::get_gba_header(file.path);
             _current_cart_infos->cart_rom_infos = mock::get_gba_file_info(header.data());
@@ -66,7 +66,7 @@ namespace openflash
             _loading = false;
             _response_ready = true;
 #else
-                // TODO: poll the ESP32 cart-info request here.
+            // Poll ESP32 response here. Keep _loading true until a complete response is available.
 #endif
         }
 
@@ -77,8 +77,10 @@ namespace openflash
 
         const cart_infos &cart_api::get_cart_infos_response() const
         {
-            BN_ASSERT(_current_cart_infos.has_value(), "Cart infos is nullopt");
+            if (!_current_cart_infos.has_value())
+                BN_ERROR("Cart infos is nullopt");
+
             return *_current_cart_infos;
         }
-    } // namespace api
-} // namespace openflash
+    }
+}

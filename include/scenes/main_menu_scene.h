@@ -14,7 +14,7 @@ namespace openflash
 {
     class main_menu_bg_scene : public i_scene
     {
-      private:
+    private:
         bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
@@ -25,8 +25,7 @@ namespace openflash
         int _current_menu_index;
         bool _pending_cart_infos_request;
         bn::optional<pop_up> _popup;
-
-      public:
+    public:
         main_menu_bg_scene();
         virtual ~main_menu_bg_scene() = default;
         virtual void enter();
@@ -34,8 +33,8 @@ namespace openflash
         virtual void update();
         virtual void render();
         virtual scene_type get_scene_type();
-        virtual void set_title(const bn::string_view &title);
+        virtual void set_title(const bn::string_view& title);
     };
-} // namespace openflash
+}
 
 #endif // MAIN_MENU_SCENE_H

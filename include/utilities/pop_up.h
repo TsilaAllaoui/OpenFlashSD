@@ -16,7 +16,7 @@ namespace openflash
 {
     class pop_up : public i_pop_up
     {
-      private:
+    private:
         bn::string_view _title;
         bn::optional<bn::regular_bg_ptr> _pop_up_bg;
         bn::sprite_text_generator _text_generator_8x16;
@@ -29,7 +29,7 @@ namespace openflash
         bool _acceptable;
         bool _open;
 
-      public:
+    public:
         pop_up(const bn::string_view &title,
                bool cancellable = true,
                bool acceptable = false,
@@ -41,6 +41,6 @@ namespace openflash
         confirmation_request_status get_confirmation_response() const;
         bool is_open() const;
     };
-} // namespace openflash
+}
 
 #endif // POP_UP_H

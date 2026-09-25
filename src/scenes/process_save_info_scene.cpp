@@ -21,11 +21,14 @@
 
 namespace openflash
 {
-    process_save_info_scene::process_save_info_scene()
-        : _type(scene_type::SAVE_PROCESS_SCREEN), _background(), _pop_up(),
-          _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
-          _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)), _sprites(),
-          _pending_cart_infos_request(false)
+    process_save_info_scene::process_save_info_scene() :
+        _type(scene_type::SAVE_PROCESS_SCREEN),
+        _background(),
+        _pop_up(),
+        _text_generator_8x16(bn::sprite_text_generator(common::variable_8x16_sprite_font)),
+        _text_generator_8x8(bn::sprite_text_generator(common::variable_8x8_sprite_font)),
+        _sprites(),
+        _request_status(request_status::IDLE)
     {
         _sprites.emplace_back(bn::sprite_items::gbacart.create_sprite(screen_left + 30, screen_top + 120));
         _sprites.emplace_back(bn::sprite_items::arrow.create_sprite(screen_left + 46, screen_top + 120));
@@ -34,9 +37,12 @@ namespace openflash
 
         for (auto &sprite : _sprites)
             sprite.set_visible(false);
+
+        _text_generator_8x16.set_bg_priority(1);
+        _text_generator_8x8.set_bg_priority(1);
     }
 
-    void process_save_info_scene::enter()
+    void process_save_info_scene::render_infos()
     {
         auto current_save_process_infos = flash_context::instance().get_current_save_infos();
 
@@ -56,61 +62,48 @@ namespace openflash
 
         _current_cart_infos = cart_infos_result.value();
 
-        _sprites[arrow_index].set_horizontal_flip(current_save_process_infos->status == process_status::WRITING);
+        const auto &current_rom_infos_in_cart = _current_cart_infos.cart_rom_infos;
 
-        bn::string<max_character_count> type_text = current_save_process_infos->status == process_status::WRITING
-                                                        ? "Restore"
-                                                        : "Backup";
-        type_text += " save";
+        _text_sprites.clear();
 
-        text_helpers::draw_centered(_text_generator_8x16, type_text, screen_top + 12, _text_sprites);
+        bool restoring = current_save_process_infos->status == process_status::WRITING;
 
-        bn::bg_tiles::set_allow_offset(false);
-        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
-                                                bn::regular_bg_tiles_items::tiles_palette,
-                                                openflash::dump_rom_info_scene_bg_map_item)
-                                .create_bg(0, 0));
-        _background->set_top_left_position(0, 0);
-        bn::regular_bg_map_ptr bg_map_ptr = _background->map();
-        bg_map_ptr.reload_cells_ref();
-        _background->set_priority(1);
-        bn::bg_tiles::set_allow_offset(true);
+        bn::string<max_character_count> title_text = restoring ? "Restore save" : "Backup save";
 
-        auto current_rom_infos_in_cart = _current_cart_infos.cart_rom_infos;
+        text_helpers::draw_centered(_text_generator_8x16, title_text, screen_top + 12, _text_sprites);
 
         bn::string_view label = "Name:";
+
         text_helpers::draw_label_value(_text_generator_8x16,
                                        label,
-                                       current_rom_infos_in_cart.name.empty() ? "Unkown name"
-                                                                              : current_rom_infos_in_cart.name,
+                                       current_rom_infos_in_cart.name.empty() ? "Unkown name" : current_rom_infos_in_cart.name,
                                        process_save_x_alignment,
                                        -process_save_x_alignment,
                                        process_save_scene_text_y_top,
                                        _text_sprites);
 
         label = "Game Code:";
+
         text_helpers::draw_label_value(_text_generator_8x16,
                                        label,
-                                       current_rom_infos_in_cart.game_code.empty()
-                                           ? "Unkown game code"
-                                           : current_rom_infos_in_cart.game_code,
+                                       current_rom_infos_in_cart.game_code.empty() ? "Unkown game code" : current_rom_infos_in_cart.game_code,
                                        process_save_x_alignment,
                                        -process_save_x_alignment,
                                        process_save_scene_text_y_top + process_save_scene_text_y_spacing,
                                        _text_sprites);
 
         label = "Marker code:";
+
         text_helpers::draw_label_value(_text_generator_8x16,
                                        label,
-                                       current_rom_infos_in_cart.maker_code.empty()
-                                           ? "Unkown marker code"
-                                           : current_rom_infos_in_cart.maker_code,
+                                       current_rom_infos_in_cart.maker_code.empty() ? "Unkown marker code" : current_rom_infos_in_cart.maker_code,
                                        process_save_x_alignment,
                                        -process_save_x_alignment,
                                        process_save_scene_text_y_top + process_save_scene_text_y_spacing * 2,
                                        _text_sprites);
 
         label = "Save type:";
+
         text_helpers::draw_label_value(_text_generator_8x16,
                                        label,
                                        string_helpers::to_string(current_rom_infos_in_cart.savetype),
@@ -121,16 +114,26 @@ namespace openflash
 
         bn::string<max_file_patch_character> cart_name_text = "Cart: ";
         cart_name_text += cart_infos_result->name;
-        text_helpers::draw_centered(_text_generator_8x16, cart_name_text, screen_top + 95, _text_sprites);
 
-        text_helpers::draw_centered_at(_text_generator_8x16, type_text, 20, screen_top + 120, _text_sprites);
+        text_helpers::draw_centered(_text_generator_8x16,
+                                    cart_name_text,
+                                    screen_top + 95,
+                                    _text_sprites);
+
+        text_helpers::draw_centered_at(_text_generator_8x16,
+                                       restoring ? "Restore" : "Backup",
+                                       20,
+                                       screen_top + 120,
+                                       _text_sprites);
 
         bn::string<max_character_count> help_text = "A: ";
-        help_text += bn::string<max_character_count>(current_save_process_infos->status == process_status::WRITING
-                                                         ? "Restore"
-                                                         : "Backup")
-                     + " B: Back SELECT: Refresh cart";
-        text_helpers::draw_centered(_text_generator_8x8, help_text, 65, _text_sprites);
+        help_text += restoring ? "Restore" : "Backup";
+        help_text += " B: Back SELECT: Refresh cart";
+
+        text_helpers::draw_centered(_text_generator_8x8,
+                                    help_text,
+                                    65,
+                                    _text_sprites);
 
         for (auto &sprite : _sprites)
             sprite.set_visible(true);
@@ -138,35 +141,80 @@ namespace openflash
         set_content_priority(1);
     }
 
+    void process_save_info_scene::enter()
+    {
+        _pop_up.reset();
+        _text_sprites.clear();
+        _request_status = request_status::IDLE;
+
+        auto current_save_process_infos = flash_context::instance().get_current_save_infos();
+
+        if (!current_save_process_infos.has_value())
+        {
+            scene_state_machine::instance().request_scene_state(scene_type::MAIN_MENU);
+            return;
+        }
+
+        _sprites[arrow_index].set_horizontal_flip(current_save_process_infos->status == process_status::WRITING);
+
+        for (auto &sprite : _sprites)
+            sprite.set_visible(false);
+
+        bn::bg_tiles::set_allow_offset(false);
+
+        _background.emplace(bn::regular_bg_item(bn::regular_bg_tiles_items::tiles,
+                                                bn::regular_bg_tiles_items::tiles_palette,
+                                                openflash::dump_rom_info_scene_bg_map_item)
+                                .create_bg(0, 0));
+
+        _background->set_top_left_position(0, 0);
+
+        bn::regular_bg_map_ptr bg_map_ptr = _background->map();
+        bg_map_ptr.reload_cells_ref();
+
+        bn::bg_tiles::set_allow_offset(true);
+
+        set_content_priority(1);
+
+        _request_status = request_status::PENDING;
+
+        api::cart_api::instance().request_cart_infos();
+
+        _pop_up.emplace("Getting cart infos...", false);
+        _pop_up->render();
+    }
+
     void process_save_info_scene::exit()
     {
         _pop_up.reset();
-        _pending_cart_infos_request = false;
 
         for (auto &sprite : _sprites)
             sprite.set_visible(false);
 
         _text_sprites.clear();
         _background.reset();
+
+        _request_status = request_status::IDLE;
     }
 
     void process_save_info_scene::update()
     {
-        if (_pending_cart_infos_request)
+        if (_request_status == request_status::PENDING)
         {
             auto &cart_api = api::cart_api::instance();
+
             cart_api.update();
 
             if (!cart_api.response_available())
                 return;
 
-            const auto &cart_infos = cart_api.get_cart_infos_response();
-            flash_context::instance().set_current_cart_infos(cart_infos);
-            _current_cart_infos = cart_infos;
-            _pending_cart_infos_request = false;
-            _pop_up.reset();
+            flash_context::instance().set_current_cart_infos(cart_api.get_cart_infos_response());
 
-            scene_state_machine::instance().request_scene_state(scene_type::SAVE_PROCESS_SCREEN);
+            _pop_up.reset();
+            _request_status = request_status::IDLE;
+
+            render_infos();
+
             return;
         }
 
@@ -178,14 +226,31 @@ namespace openflash
 
             if (confirmation_status == confirmation_request_status::POSITIVE)
             {
+                auto current_save_process_infos = flash_context::instance().get_current_save_infos();
+
+                if (!current_save_process_infos.has_value())
+                {
+                    _pop_up.reset();
+                    scene_state_machine::instance().request_scene_state(scene_type::MAIN_MENU);
+                    return;
+                }
+
+                if (current_save_process_infos->status == process_status::WRITING)
+                    flash_context::instance().set_requested_process_type(process_type::RESTORE_SAVE);
+                else
+                    flash_context::instance().set_requested_process_type(process_type::BACKUP_SAVE);
+
                 _pop_up.reset();
-                set_content_priority(1);
-                scene_state_machine::instance().request_process_progress(process_type::RESTORE_SAVE);
+
+                scene_state_machine::instance().request_scene_state(scene_type::PROCESS_PROGRESS);
+
+                return;
             }
-            else if (confirmation_status == confirmation_request_status::NEGATIVE)
+
+            if (confirmation_status == confirmation_request_status::NEGATIVE)
             {
-                set_content_priority(1);
                 _pop_up.reset();
+                return;
             }
 
             return;
@@ -195,16 +260,21 @@ namespace openflash
         {
             flash_context::instance().set_current_file_filter(file_type::SAVE_FILE);
             scene_state_machine::instance().request_scene_state(scene_type::FILE_BROWSER);
+
             return;
         }
 
         if (bn::keypad::select_pressed())
         {
-            _pending_cart_infos_request = true;
+            _request_status = request_status::PENDING;
+
             api::cart_api::instance().request_cart_infos();
+
             set_content_priority(1);
+
             _pop_up.emplace("Getting cart infos...", false);
             _pop_up->render();
+
             return;
         }
 
@@ -219,14 +289,18 @@ namespace openflash
             }
 
             bn::string<max_character_count> pop_up_header_text = current_save_process_infos->status
-                                                                         == process_status::READING
-                                                                     ? "Backup"
-                                                                     : "Restore";
+                                                                         == process_status::WRITING
+                                                                     ? "Restore"
+                                                                     : "Backup";
+
             pop_up_header_text += " Save?";
 
             set_content_priority(1);
+
             _pop_up.emplace(pop_up_header_text, true, true);
             _pop_up->render();
+
+            return;
         }
     }
 
@@ -235,14 +309,14 @@ namespace openflash
         if (_background)
             _background->set_priority(priority);
 
+        _text_generator_8x16.set_bg_priority(priority);
+        _text_generator_8x8.set_bg_priority(priority);
+
         for (auto &sprite : _text_sprites)
             sprite.set_bg_priority(priority);
 
         for (auto &sprite : _sprites)
             sprite.set_bg_priority(priority);
-
-        _text_generator_8x16.set_bg_priority(priority);
-        _text_generator_8x8.set_bg_priority(priority);
     }
 
     void process_save_info_scene::render()
@@ -258,4 +332,4 @@ namespace openflash
     {
         _title = title;
     }
-} // namespace openflash
+}

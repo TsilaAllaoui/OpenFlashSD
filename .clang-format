@@ -98,3 +98,6 @@ ReflowComments: false
 
 NamespaceIndentation: All
 CompactNamespaces: false
+
+PackConstructorInitializers: Never
+BreakConstructorInitializers: AfterColon

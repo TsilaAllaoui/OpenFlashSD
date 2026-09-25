@@ -19,7 +19,7 @@ namespace openflash
 {
     class flash_screen_scene : public i_scene
     {
-      private:
+    private:
         bn::string_view _title;
         scene_type _type;
         bn::optional<bn::regular_bg_ptr> _background;
@@ -33,7 +33,7 @@ namespace openflash
 
         void set_content_priority(int priority);
 
-      public:
+    public:
         flash_screen_scene();
         virtual ~flash_screen_scene() = default;
         virtual void enter();
@@ -44,6 +44,6 @@ namespace openflash
         virtual void set_title(const bn::string_view &title);
         void render_cart_infos();
     };
-} // namespace openflash
+}
 
 #endif // FLASH_SCREEN_SCENE_H

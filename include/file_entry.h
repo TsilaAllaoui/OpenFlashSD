@@ -1,6 +1,8 @@
 #ifndef FILE_ENTRY_H
 #define FILE_ENTRY_H
 
+#include <stdint.h>
+
 #include "bn_vector.h"
 #include "bn_string.h"
 #include "bn_display.h"
@@ -19,7 +21,7 @@ namespace openflash
 {
     struct rom_infos;
 
-    enum class file_type
+    enum class file_type : uint8_t
     {
         NORMAL_FILE,
         FOLDER,
@@ -29,31 +31,30 @@ namespace openflash
 
     class file_entry
     {
-      public:
-        file_entry(bn::string_view name_,
-                   bn::string_view path_,
+    public:
+        file_entry(bn::string_view path_,
                    file_type type_,
-                   int id_,
-                   int parentId_ = -1,
-                   int depth_ = 0,
-                   int size_ = 0);
+                   int16_t id_,
+                   int16_t parentId_ = -1,
+                   uint8_t depth_ = 0,
+                   uint32_t size_ = 0);
 
         ~file_entry() = default;
 
-        bn::string_view name;
         bn::string_view path;
+        uint32_t size;
+        int16_t id;
+        int16_t parentId;
         file_type type;
-        int id;
-        int parentId;
-        int depth;
-        int size;
+        uint8_t depth;
 
+        bn::string_view name() const;
         bool is_folder() const;
         bool is_file() const;
         bool is_gba_file() const;
         bool is_save_file() const;
         rom_infos get_gba_file_info(uint8_t *rom_bytes);
     };
-} // namespace openflash
+}
 
 #endif // FILE_ENTRY_H
