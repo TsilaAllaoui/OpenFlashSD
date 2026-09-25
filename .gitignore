@@ -5,3 +5,7 @@ compile_commands.json
 *.elf
 *.gba
 *.sav
+*.tar
+*.tar.xz
+*.7z
+*.zip
